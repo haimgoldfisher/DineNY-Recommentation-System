@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <a href="#" class="nav-logo">Restaurant Reviews</a>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('restaurants') }}" class="nav-link">View Restaurants</a></li>
+                <li><a href="{{ url_for('reviews') }}" class="nav-link">My Reviews</a></li>
+                <li><a href="{{ url_for('ai_recommendations') }}" class="nav-link">AI Recommendations</a></li>
+                <li><a href="{{ url_for('logout') }}" class="nav-link">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Welcome to Restaurant Reviews!</h1>
+                <p>Discover top restaurants, manage your reviews, and get personalized AI recommendations.</p>
+                <a href="{{ url_for('restaurants') }}" class="btn-primary">Explore Now</a>
+            </div>
+        </section>
+
+        <section class="info">
+            <h2>What We Offer</h2>
+            <div class="info-cards">
+                <div class="info-card">
+                    <h3>Discover Restaurants</h3>
+                    <p>Browse through a variety of restaurants and find your next favorite spot.</p>
+                </div>
+                <div class="info-card">
+                    <h3>Manage Reviews</h3>
+                    <p>Update or delete your reviews and keep track of your feedback.</p>
+                </div>
+                <div class="info-card">
+                    <h3>Personalized Recommendations</h3>
+                    <p>Get AI-powered suggestions based on your preferences and past reviews.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 My Restaurant App. All rights reserved.</p>
+    </footer>
+</body>
+</html>

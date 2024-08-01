@@ -1,0 +1,9 @@
+/.venv/*
+
+.idea
+
+/__pycache__/*
+
+/data/data-cleaning/data/*
+
+/data/Google-Maps-Restaurant/dump/*

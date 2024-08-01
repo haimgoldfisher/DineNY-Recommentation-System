@@ -1,0 +1,386 @@
+/* General Styles */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #e0eafc, #cfdef3); /* Updated background gradient */
+    color: #333;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+h1, h2 {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Navigation Bar */
+header {
+    background-color: #007bff; /* Keep existing color */
+    padding: 15px 0;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.nav-logo {
+    color: #fff;
+    text-decoration: none;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 20px;
+}
+
+.nav-links li {
+    margin: 0;
+}
+
+.nav-link {
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: 500;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.nav-link:hover {
+    background-color: #0056b3; /* Keep existing color */
+}
+
+/* Hero Section */
+.hero {
+    background: #007bff; /* Darker background for the hero section */
+    color: #fff;
+    padding: 60px 20px;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.hero h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+}
+
+.btn-primary {
+    background-color: #ff6600;
+    color: #fff;
+    padding: 15px 30px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 1.2em;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #e65c00;
+}
+
+/* Restaurant and Review Blocks */
+.restaurant-list,
+.review-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.restaurant-block,
+.review-block {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    flex: 1 1 calc(50% - 20px); /* Adjusted to 2 blocks per line */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.restaurant-block:hover,
+.review-block:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+    background: #f8f9fa;
+}
+
+.restaurant-block img,
+.review-block img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.restaurant-info,
+.review-info {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 10px;
+}
+
+.restaurant-name {
+    font-weight: 600;
+    font-size: 20px;
+    color: #333;
+}
+
+.rating {
+    color: #f39c12;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.reviews {
+    color: #555;
+    font-size: 16px;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .restaurant-block,
+    .review-block {
+        flex: 1 1 100%; /* Stack blocks vertically on smaller screens */
+        max-width: 100%;
+    }
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.pagination a {
+    text-decoration: none;
+    color: #007bff;
+    margin: 0 10px;
+    font-weight: 500;
+}
+
+.pagination .current-page {
+    font-weight: 700;
+    color: #333;
+}
+
+/* Popup Styles */
+.popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 30px;
+    border: 1px solid #ddd;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    width: 400px;
+    max-width: 90%;
+    height: 500px;
+    overflow-y: auto;
+    border-radius: 10px;
+}
+
+.popup.show {
+    display: block;
+}
+
+.popup .close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ff4d4d;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    line-height: 30px;
+    font-size: 18px;
+}
+
+.popup-content {
+    margin-top: 40px;
+}
+
+.popup img {
+    width: 100%;
+    height: auto;
+    max-width: 300px;
+    max-height: 200px;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Star Rating */
+.star-rating {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.star-rating .star {
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.star-rating .star.off {
+    content: url('/static/imgs/star-off.png');
+}
+
+.star-rating .star.on {
+    content: url('/static/imgs/star-on.png');
+}
+
+.star-rating .star:hover {
+    transform: scale(1.1);
+}
+
+/* Footer */
+footer {
+    background-color: #007bff;
+    color: #fff;
+    padding: 15px 0;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .restaurant-block,
+    .review-block {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+
+    .popup {
+        width: 90%;
+        height: auto;
+    }
+}
+
+/* Popup Styles */
+.form-popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 3px solid #f1f1f1;
+    z-index: 9;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+}
+
+.form-container {
+    width: 100%;
+}
+
+#popupImage {
+    width: 100%;
+    height: auto;
+    max-width: 300px;
+    max-height: 200px;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto;
+}
+
+.form-container .btn-primary {
+    background-color: #ff6600;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+}
+
+.form-container .btn-primary:hover {
+    background-color: #e65c00;
+}
+
+.form-container .btn.cancel {
+    background-color: #ff4d4d;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+}
+
+.form-container .btn.cancel:hover {
+    background-color: #e64a4a;
+}
+
+.confirmation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.confirmation-buttons .btn-primary {
+    background-color: #4CAF50;
+}
+
+.confirmation-buttons .btn-primary:hover {
+    background-color: #45a049;
+}
+
+.confirmation-buttons .btn.cancel {
+    background-color: #f44336;
+}
+
+.confirmation-buttons .btn.cancel:hover {
+    background-color: #e53935;
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Restaurant App{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Common JavaScript functionality
+        function showPopup(content) {
+            $('#popup').html(content).addClass('show');
+            $('#popup').show();
+        }
+
+        function hidePopup() {
+            $('#popup').removeClass('show');
+            $('#popup').hide();
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('index') }}" class="nav-link">Home</a></li>
+                    <li><a href="{{ url_for('restaurants') }}" class="nav-link">Restaurants</a></li>
+                    <li><a href="{{ url_for('reviews') }}" class="nav-link">My Reviews</a></li>
+                    <li><a href="{{ url_for('ai_recommendations') }}" class="nav-link">AI Recommendations</a></li>
+                    <li><a href="{{ url_for('logout') }}" class="nav-link">Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 My Restaurant App</p>
+        </div>
+    </footer>
+    <div id="popup" class="popup" onclick="hidePopup()"></div>
+</body>
+</html>

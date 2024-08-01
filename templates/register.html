@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Styles specific to the registration page */
+        .register-container {
+            max-width: 400px; /* Set a max width for the form */
+            margin: 50px auto; /* Center the form horizontally and add top margin */
+            padding: 30px;
+            background-color: #fff; /* White background for the form */
+            border-radius: 12px; /* Rounded corners */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); /* Softer shadow */
+            text-align: center;
+        }
+
+        .register-container h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 28px; /* Slightly larger font size for the heading */
+            font-weight: 600;
+            color: #333; /* Dark text color */
+        }
+
+        .register-container label {
+            display: block; /* Block display for labels to stack vertically */
+            margin-bottom: 12px; /* Increased space below each label */
+            font-weight: 500; /* Medium font weight for labels */
+            color: #555; /* Slightly lighter color for labels */
+        }
+
+        .register-container input[type="text"] {
+            width: 100%; /* Full width for the input */
+            padding: 12px;
+            margin-bottom: 20px; /* Space below the input */
+            border: 1px solid #ccc; /* Light gray border */
+            border-radius: 8px; /* More rounded corners */
+            font-size: 16px; /* Increased font size for better readability */
+        }
+
+        .register-container button {
+            width: 100%; /* Full width for the button */
+            padding: 12px;
+            background-color: #007bff; /* Primary color */
+            color: white; /* White text color */
+            border: none;
+            border-radius: 8px; /* More rounded corners */
+            font-size: 18px; /* Larger font size */
+            cursor: pointer; /* Pointer cursor on hover */
+            transition: background-color 0.3s, transform 0.3s; /* Smooth background color and scale transition */
+        }
+
+        .register-container button:hover {
+            background-color: #0056b3; /* Darker shade of primary color on hover */
+            transform: scale(1.02); /* Slight scale-up effect */
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #e0eafc, #cfdef3); /* Updated background gradient */
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2>Register</h2>
+        {% if step == 'input' %}
+        <form method="POST" action="{{ url_for('register') }}">
+            <label for="contact">Request ID:</label>
+            <input type="text" id="contact" name="contact" placeholder="Enter your ID" pattern="\d+" title="ID must be numeric" required>
+            <button type="submit">Generate ID</button>
+        </form>
+        {% elif step == 'confirm' %}
+        <p>Your generated ID is: <strong>{{ user_id }}</strong></p>
+        <form method="POST" action="{{ url_for('register') }}">
+            <input type="hidden" name="user_id" value="{{ user_id }}">
+            <button type="submit" name="confirm">Confirm Registration</button>
+            <a href="{{ url_for('register') }}">Generate a new ID</a>
+        </form>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,221 @@
+{% extends "layout.html" %}
+{% block title %}My Reviews{% endblock %}
+{% block content %}
+<h1>My Reviews</h1>
+<div class="review-list">
+    {% for review in reviews %}
+    <div class="review-block" onclick="showReviewOptions('{{ review.gmap_id }}')">
+        <h2>{{ review.name }}</h2>
+        <img src="{{ review.img_url }}" alt="Restaurant Image">
+        <div class="review-info">
+            <span class="rating">Your Rating: <span class="stars">{{ review.rating }}</span></span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<div class="pagination">
+    {% if page > 1 %}
+    <a href="{{ url_for('reviews', page=page-1) }}">Previous</a>
+    {% endif %}
+    Page {{ page }} of {{ total_pages }}
+    {% if page < total_pages %}
+    <a href="{{ url_for('reviews', page=page+1) }}">Next</a>
+    {% endif %}
+</div>
+
+<!-- Review Options Popup -->
+<div id="reviewOptionsPopup" class="form-popup">
+    <div class="form-container">
+        <button class="close-button" onclick="closePopup()">X</button>
+        <h1>Review Options</h1>
+        <button type="button" class="btn-primary" onclick="showUpdateReviewPopup()">Update Review</button>
+        <button type="button" class="btn-primary" onclick="removeReview()">Remove Review</button>
+    </div>
+</div>
+
+<!-- Update Review Popup -->
+<div id="updateReviewPopup" class="form-popup">
+    <div class="form-container">
+        <h1 id="popupTitle">Update Review</h1>
+        <img id="popupImage" src="" alt="Restaurant Image">
+        <div id="popupInfo"></div>
+        <div class="star-rating">
+            <img class="star" src="{{ url_for('static', filename='imgs/star-off.png') }}" data-value="1" alt="Star 1">
+            <img class="star" src="{{ url_for('static', filename='imgs/star-off.png') }}" data-value="2" alt="Star 2">
+            <img class="star" src="{{ url_for('static', filename='imgs/star-off.png') }}" data-value="3" alt="Star 3">
+            <img class="star" src="{{ url_for('static', filename='imgs/star-off.png') }}" data-value="4" alt="Star 4">
+            <img class="star" src="{{ url_for('static', filename='imgs/star-off.png') }}" data-value="5" alt="Star 5">
+        </div>
+        <button type="button" class="btn-primary" onclick="submitRating()">Submit</button>
+        <button type="button" class="btn cancel" onclick="closePopup()">Cancel</button>
+    </div>
+</div>
+
+<!-- Remove Review Confirmation Popup -->
+<div id="removeReviewConfirmationPopup" class="form-popup">
+    <div class="form-container">
+        <h1>Confirm Removal</h1>
+        <p>Are you sure you want to delete this review?</p>
+        <div class="confirmation-buttons">
+            <button type="button" class="btn-primary" onclick="confirmRemoveReview()">Yes</button>
+            <button type="button" class="btn cancel" onclick="closePopup()">No</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentGmapId = null;
+    let currentRating = 0;
+
+    function showReviewOptions(gmapId) {
+        currentGmapId = gmapId;
+        document.getElementById("reviewOptionsPopup").style.display = "block";
+    }
+
+    function closePopup() {
+        document.getElementById("reviewOptionsPopup").style.display = "none";
+        document.getElementById("updateReviewPopup").style.display = "none";
+        document.getElementById("removeReviewConfirmationPopup").style.display = "none";
+    }
+
+    function updateReview() {
+        fetch(`/review_details/${currentGmapId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Update popup content
+                document.getElementById("popupTitle").innerText = data.name;
+                document.getElementById("popupImage").src = data.img_url;
+                const formattedRating = data.avg_rating.toFixed(1);
+                document.getElementById("popupInfo").innerHTML = `
+                    <p>Restaurant: ${data.name}</p>
+                    <p>Address: ${data.address}</p>
+                    <p>URL: <a href="${data.url}" target="_blank">Click here</a></p>
+                    <p>Average Rating: ${formattedRating}</p>
+                    <p>Your Rating: ${data.user_rating}</p>
+                    <p>Reviews: ${data.reviews}</p>
+                `;
+                document.getElementById("updateReviewPopup").style.display = "block";
+            })
+            .catch(error => console.error('Error fetching review details:', error));
+    }
+
+    function showUpdateReviewPopup() {
+        updateReview(); // Fetch review details and display update popup
+    }
+
+    function submitRating() {
+        fetch('/api/update_review', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                'gmap_id': currentGmapId,
+                'rating': currentRating
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`You have updated the rating to ${currentRating} stars.`);
+                closePopup();
+            } else {
+                alert('Error updating the rating.');
+            }
+        })
+        .catch(error => console.error('Error updating review:', error));
+    }
+
+    function removeReview() {
+        document.getElementById("removeReviewConfirmationPopup").style.display = "block";
+    }
+
+    function confirmRemoveReview() {
+        fetch('/api/delete_review', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                'gmap_id': currentGmapId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Review removed.');
+                closePopup();
+            } else {
+                alert('Error removing the review.');
+            }
+        })
+        .catch(error => console.error('Error removing review:', error));
+    }
+
+    function closeRemoveConfirmationPopup() {
+        closePopup();
+    }
+
+    // Star rating logic for update review popup
+    const stars = document.querySelectorAll('#updateReviewPopup .star');
+
+    stars.forEach((star, index) => {
+        star.addEventListener('click', () => {
+            currentRating = index + 1;
+            updateStars();
+            showUpdateConfirmationPopup();
+        });
+        star.addEventListener('mouseover', () => {
+            highlightStars(index);
+        });
+        star.addEventListener('mouseout', updateStars);
+    });
+
+    function highlightStars(index) {
+        stars.forEach((star, i) => {
+            if (i <= index) {
+                star.src = "{{ url_for('static', filename='imgs/star-on.png') }}";
+            } else {
+                star.src = "{{ url_for('static', filename='imgs/star-off.png') }}";
+            }
+        });
+    }
+
+    function updateStars() {
+        stars.forEach((star, i) => {
+            if (i < currentRating) {
+                star.src = "{{ url_for('static', filename='imgs/star-on.png') }}";
+            } else {
+                star.src = "{{ url_for('static', filename='imgs/star-off.png') }}";
+            }
+        });
+    }
+
+    function showUpdateConfirmationPopup() {
+        // Implement the function to show a confirmation popup after selecting stars
+        alert(`You have selected ${currentRating} stars. Are you sure about your choice?`);
+    }
+
+    // Function to generate star emojis
+    function generateStars(rating) {
+        let stars = '';
+        for (let i = 0; i < 5; i++) {
+            if (i < rating) {
+                stars += '★'; // filled star
+            } else {
+                stars += '☆'; // empty star
+            }
+        }
+        return stars;
+    }
+
+    // Update the stars display for each review
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.stars').forEach(span => {
+            const rating = parseInt(span.innerText, 10);
+            span.innerHTML = generateStars(rating);
+        });
+    });
+
+</script>
+{% endblock %}
