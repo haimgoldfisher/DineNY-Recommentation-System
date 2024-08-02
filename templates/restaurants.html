@@ -33,7 +33,7 @@
 </div>
 
 <!-- Popup HTML -->
-<div id="restaurantPopup" class="form-popup">
+<div id="restaurantPopup" class="form-popup" data-restaurant-id="">
     <div class="form-container">
         <button class="close-button" onclick="closePopup()">X</button>
         <h1 id="popupTitle">Restaurant Details</h1>
@@ -48,6 +48,7 @@
         </div>
     </div>
 </div>
+
 
 <!-- Confirmation Popup -->
 <div id="confirmationPopup" class="form-popup">
@@ -74,18 +75,22 @@
                 const formattedRating = data.rating.toFixed(1);
                 document.getElementById("popupInfo").innerHTML = `
                     <p>Address: ${data.address}</p>
-                    <p>URL: <a href="${data.url}" target="_blank">Click here</a></p>
                     <p>Rating: ${formattedRating}</p>
                     <p>Reviews: ${data.reviews}</p>
                 `;
+                // Set the restaurant ID for later use
+                document.getElementById("restaurantPopup").setAttribute('data-restaurant-id', gmap_id);
                 // Display the popup
                 document.getElementById("restaurantPopup").style.display = "block";
+                document.body.style.overflow = 'hidden';  // Prevent scrolling
             })
             .catch(error => console.error('Error fetching restaurant details:', error));
     }
 
+
     function closePopup() {
         document.getElementById("restaurantPopup").style.display = "none";
+        document.body.style.overflow = '';  // Enable scrolling
     }
 
     function showConfirmationPopup() {
@@ -94,9 +99,6 @@
     }
 
     function closeConfirmationPopup() {
-        // Reset the star rating
-        currentRating = 0;
-        updateStars();
         document.getElementById("confirmationPopup").style.display = "none";
     }
 
@@ -104,8 +106,42 @@
         alert(`You have rated ${currentRating} stars.`);
         closeConfirmationPopup();
         closePopup();
-        // Implement the logic to save the rating to the backend here
+
+        // Get the restaurant ID from the popup's data attribute
+        const restaurantId = document.getElementById('restaurantPopup').getAttribute('data-restaurant-id');
+
+        if (!restaurantId || !currentRating) {
+            alert('Missing restaurant ID or rating.');
+            return;
+        }
+
+        // Send the rating to the backend
+        fetch('/api/add_review', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                gmap_id: restaurantId,
+                rating: currentRating
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Rating submitted successfully!');
+                // Optionally, update the UI to reflect the new rating
+            } else {
+                alert(`Failed to submit rating: ${data.error}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while submitting the rating.');
+        });
     }
+
+
 
     // Star rating logic
     const stars = document.querySelectorAll('.star-rating .star');
@@ -124,21 +160,13 @@
 
     function highlightStars(index) {
         stars.forEach((star, i) => {
-            if (i <= index) {
-                star.src = "{{ url_for('static', filename='imgs/star-on.png') }}";
-            } else {
-                star.src = "{{ url_for('static', filename='imgs/star-off.png') }}";
-            }
+            star.src = i <= index ? "{{ url_for('static', filename='imgs/star-on.png') }}" : "{{ url_for('static', filename='imgs/star-off.png') }}";
         });
     }
 
     function updateStars() {
         stars.forEach((star, i) => {
-            if (i < currentRating) {
-                star.src = "{{ url_for('static', filename='imgs/star-on.png') }}";
-            } else {
-                star.src = "{{ url_for('static', filename='imgs/star-off.png') }}";
-            }
+            star.src = i < currentRating ? "{{ url_for('static', filename='imgs/star-on.png') }}" : "{{ url_for('static', filename='imgs/star-off.png') }}";
         });
     }
 </script>

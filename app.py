@@ -1,4 +1,5 @@
 import random
+import time
 
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
 from flask_login import LoginManager, login_user, login_required, current_user, UserMixin, logout_user
@@ -74,6 +75,7 @@ def generate_unique_user_id(length=18):
         if not users_collection.find_one({"user_id": user_id}):
             return user_id
 
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -84,7 +86,7 @@ def register():
                 return render_template('register.html', user_id=user_id, step='confirm')
 
             try:
-                users_collection.insert_one({"user_id": user_id})
+                users_collection.insert_one({"user_id": user_id, "ratings": []})
                 flash('Registration successful! You can now log in.')
                 return redirect(url_for('login'))
             except Exception as e:
@@ -149,33 +151,40 @@ def reviews():
     user_id = current_user.id
 
     try:
-        # Fetch total number of user reviews
-        total = reviews_collection.count_documents({"user_id": user_id})
+        # Fetch user document
+        user_doc = users_collection.find_one({"user_id": user_id}, {"ratings": 1})
 
-        # Fetch user reviews with pagination
-        user_reviews = list(
-            reviews_collection.find({"user_id": user_id})
-            .skip((page - 1) * per_page)
-            .limit(per_page)
-        )
+        if not user_doc or 'ratings' not in user_doc:
+            logging.info(f"No reviews found for user_id: {user_id}")
+            user_reviews = []
+            total = 0
+        else:
+            # Get all user reviews
+            user_reviews = user_doc['ratings']
+            total = len(user_reviews)
 
-        # Extract gmap_ids from the user reviews
-        gmap_ids = [review['gmap_id'] for review in user_reviews]
+            # Paginate user reviews
+            start = (page - 1) * per_page
+            end = start + per_page
+            user_reviews = user_reviews[start:end]
 
-        # Fetch restaurant details for the gmap_ids
-        restaurants = list(
-            restaurants_collection.find({"gmap_id": {"$in": gmap_ids}})
-        )
+            # Extract gmap_ids from the user reviews
+            gmap_ids = [review['gmap_id'] for review in user_reviews]
 
-        # Create a dictionary for quick lookup of restaurant details by gmap_id
-        restaurant_dict = {restaurant['gmap_id']: restaurant for restaurant in restaurants}
+            # Fetch restaurant details for the gmap_ids
+            restaurants = list(
+                restaurants_collection.find({"gmap_id": {"$in": gmap_ids}})
+            )
 
-        # Add img_url and name to each review
-        for review in user_reviews:
-            gmap_id = review['gmap_id']
-            if gmap_id in restaurant_dict:
-                review['img_url'] = restaurant_dict[gmap_id].get('img_url')
-                review['name'] = restaurant_dict[gmap_id].get('name')
+            # Create a dictionary for quick lookup of restaurant details by gmap_id
+            restaurant_dict = {restaurant['gmap_id']: restaurant for restaurant in restaurants}
+
+            # Add img_url and name to each review
+            for review in user_reviews:
+                gmap_id = review['gmap_id']
+                if gmap_id in restaurant_dict:
+                    review['img_url'] = restaurant_dict[gmap_id].get('img_url')
+                    review['name'] = restaurant_dict[gmap_id].get('name')
 
     except Exception as e:
         logging.error(f"Error fetching reviews: {e}")
@@ -192,6 +201,61 @@ def reviews():
     )
 
 
+def update_restaurant_stats(gmap_id):
+    reviews = list(reviews_collection.find({"gmap_id": gmap_id}))
+    num_reviews = len(reviews)
+    avg_rating = sum(review['rating'] for review in reviews) / num_reviews if num_reviews > 0 else 0
+
+    # Log the recalculated statistics
+    logging.info(f"Updating stats for gmap_id: {gmap_id}. Number of reviews: {num_reviews}, Average rating: {avg_rating}")
+
+    restaurants_collection.update_one(
+        {"gmap_id": gmap_id},
+        {"$set": {"Rating": round(avg_rating, 1), "Reviews": num_reviews}}
+    )
+
+
+def update_user_reviews(user_id, gmap_id, rating=None, insert=True):
+    try:
+        if insert:
+            review = {
+                "rating": rating,
+                "timestamp": int(time.time() * 1000),  # current timestamp in milliseconds
+                "gmap_id": gmap_id
+            }
+
+            # Check if the review already exists
+            user = users_collection.find_one({"user_id": user_id, "ratings.gmap_id": gmap_id})
+            if user:
+                logging.info(f"Existing review found for user_id: {user_id}, gmap_id: {gmap_id}. Updating review.")
+                # Update the existing review
+                result = users_collection.update_one(
+                    {"user_id": user_id, "ratings.gmap_id": gmap_id},
+                    {"$set": {"ratings.$.rating": rating, "ratings.$.timestamp": review["timestamp"]}}
+                )
+                logging.info(f"Update result: {result.raw_result}")
+            else:
+                logging.info(f"No existing review found for user_id: {user_id}, gmap_id: {gmap_id}. Adding new review.")
+                # Add the new review to the user's reviews
+                result = users_collection.update_one(
+                    {"user_id": user_id},
+                    {"$push": {"ratings": review}}
+                )
+                logging.info(f"Insert result: {result.raw_result}")
+        else:
+            logging.info(f"Deleting review for user_id: {user_id}, gmap_id: {gmap_id}.")
+            # Delete the review
+            result = users_collection.update_one(
+                {"user_id": user_id},
+                {"$pull": {"ratings": {"gmap_id": gmap_id}}}
+            )
+            logging.info(f"Delete result: {result.raw_result}")
+        return True
+    except Exception as e:
+        logging.error(f"Error updating user reviews: {e}")
+        return False
+
+
 @app.route('/api/add_review', methods=['POST'])
 @login_required
 def add_review():
@@ -203,7 +267,9 @@ def add_review():
         return jsonify({"success": False, "error": "Missing gmap_id or rating"}), 400
 
     try:
-        rating = round(float(rating), 1)
+        rating = int(rating)
+        if rating < 1 or rating > 5:
+            return jsonify({"success": False, "error": "Rating must be between 0 and 5"}), 400
     except ValueError:
         return jsonify({"success": False, "error": "Invalid rating value. Rating must be a number."}), 400
 
@@ -213,8 +279,12 @@ def add_review():
             {"$set": {"rating": rating}},
             upsert=True
         )
-        # Trigger the recommendation update process here if needed
-        return jsonify({"success": True})
+
+        if update_user_reviews(user_id, gmap_id, rating):
+            update_restaurant_stats(gmap_id)
+            return jsonify({"success": True})
+        else:
+            return jsonify({"success": False, "error": "An error occurred while updating the user reviews."}), 500
     except Exception as e:
         logging.error(f"Error adding review: {e}")
         return jsonify({"success": False, "error": "An error occurred while adding the review. Please try again later."}), 500
@@ -231,19 +301,27 @@ def update_review():
         return jsonify({"success": False, "error": "Missing gmap_id or rating"}), 400
 
     try:
-        rating = round(float(rating), 1)
+        rating = int(rating)
+        if rating < 1 or rating > 5:
+            return jsonify({"success": False, "error": "Rating must be between 0 and 5"}), 400
     except ValueError:
-        return jsonify({"success": False, "error": "Invalid rating value"}), 400
+        return jsonify({"success": False, "error": "Invalid rating value. Rating must be a number."}), 400
 
     try:
         reviews_collection.update_one(
             {"user_id": user_id, "gmap_id": gmap_id},
             {"$set": {"rating": rating}}
         )
-        return jsonify({"success": True})
+
+        if update_user_reviews(user_id, gmap_id, rating):
+            update_restaurant_stats(gmap_id)
+            return jsonify({"success": True})
+        else:
+            return jsonify({"success": False, "error": "An error occurred while updating the user reviews."}), 500
     except Exception as e:
         logging.error(f"Error updating review: {e}")
         return jsonify({"success": False, "error": "An error occurred while updating the review"}), 500
+
 
 @app.route('/api/delete_review', methods=['POST'])
 @login_required
@@ -255,12 +333,23 @@ def delete_review():
         return jsonify({"success": False, "error": "Missing gmap_id"}), 400
 
     try:
+        # Delete review from the reviews collection
         reviews_collection.delete_one({"user_id": user_id, "gmap_id": gmap_id})
-        return jsonify({"success": True})
+
+        # Remove review from the users collection
+        users_collection.update_one(
+            {"_id": user_id},
+            {"$pull": {"ratings": {"gmap_id": gmap_id}}}
+        )
+
+        logging.info(f"Review deleted for user_id: {user_id}, gmap_id: {gmap_id}")
+        if update_user_reviews(user_id, gmap_id,None,False):
+            update_restaurant_stats(gmap_id)
+            return jsonify({"success": True})
+
     except Exception as e:
         logging.error(f"Error deleting review: {e}")
-        return jsonify({"success": False, "error": "An error occurred while deleting the review"}), 500
-
+        return jsonify({"success": False, "error": "An error occurred while deleting the review. Please try again later."}), 500
 
 @app.route('/ai_recommendations')
 @login_required
