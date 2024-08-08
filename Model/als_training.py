@@ -64,7 +64,7 @@ rmse = evaluator.evaluate(predictions)
 print(f"Root-mean-square error = {rmse}")
 
 # Save the model with overwrite option
-model.write().overwrite().save("Model/Recommendation-Model")
+model.write().overwrite().save("Recommendation-Model")
 
 # Generate top 13 recommendations for each user
 user_recs = model.recommendForAllUsers(13)
