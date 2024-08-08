@@ -6,64 +6,92 @@
     <title>Register</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
-        /* Styles specific to the registration page */
+        /* Background Image */
+        body {
+            background: url('{{ url_for('static', filename='imgs/login.jpg') }}') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Register Container */
         .register-container {
-            max-width: 400px; /* Set a max width for the form */
-            margin: 50px auto; /* Center the form horizontally and add top margin */
-            padding: 30px;
-            background-color: #fff; /* White background for the form */
-            border-radius: 12px; /* Rounded corners */
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); /* Softer shadow */
+            max-width: 400px;
+            margin: 5% auto;
+            padding: 20px;
+            background-color: #ffffff; /* White background */
+            border: 4px solid #20416d; /* Dark blue border */
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
             text-align: center;
         }
 
         .register-container h2 {
             margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 28px; /* Slightly larger font size for the heading */
+            font-size: 28px;
+            color: #20416d; /* Dark blue */
             font-weight: 600;
-            color: #333; /* Dark text color */
+        }
+
+        .register-container p {
+            font-size: 16px;
+            color: #5b95c3; /* Light blue */
+            margin-bottom: 20px;
         }
 
         .register-container label {
-            display: block; /* Block display for labels to stack vertically */
-            margin-bottom: 12px; /* Increased space below each label */
-            font-weight: 500; /* Medium font weight for labels */
-            color: #555; /* Slightly lighter color for labels */
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #20416d; /* Dark blue */
         }
 
         .register-container input[type="text"] {
-            width: 100%; /* Full width for the input */
+            width: 100%;
             padding: 12px;
-            margin-bottom: 20px; /* Space below the input */
-            border: 1px solid #ccc; /* Light gray border */
-            border-radius: 8px; /* More rounded corners */
-            font-size: 16px; /* Increased font size for better readability */
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
         }
 
         .register-container button {
-            width: 100%; /* Full width for the button */
+            width: 100%;
             padding: 12px;
-            background-color: #007bff; /* Primary color */
-            color: white; /* White text color */
+            background-color: #e7743b; /* Orange */
+            color: #ffffff; /* White text */
             border: none;
-            border-radius: 8px; /* More rounded corners */
-            font-size: 18px; /* Larger font size */
-            cursor: pointer; /* Pointer cursor on hover */
-            transition: background-color 0.3s, transform 0.3s; /* Smooth background color and scale transition */
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
 
         .register-container button:hover {
-            background-color: #0056b3; /* Darker shade of primary color on hover */
-            transform: scale(1.02); /* Slight scale-up effect */
+            background-color: #20416d; /* Dark blue */
         }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #e0eafc, #cfdef3); /* Updated background gradient */
-            color: #333;
+        .register-container .signup-link {
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        .register-container .signup-link a {
+            color: #e7743b; /* Orange */
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .register-container .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .register-container {
+                margin: 20px;
+                padding: 15px;
+            }
         }
     </style>
 </head>

@@ -5,12 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Inline CSS to handle background and button centering */
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: url('{{ url_for('static', filename='imgs/home-page.jpg') }}') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+        }
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center; /* Center vertically */
+            justify-content: flex-start; /* Align items to the start horizontally */
+            position: relative;
+        }
+        .btn-primary {
+            background-color: #e7743b;
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: background-color 0.3s;
+            border: none; /* Ensure buttons have no border */
+            cursor: pointer;
+            position: absolute; /* Position relative to the main container */
+            left: 20%; /* Move slightly more to the right */
+            top: 55%; /* Move slightly down */
+            transform: translateY(-50%); /* Adjust for vertical centering */
+        }
+        .btn-primary:hover {
+            background-color: #20416d;
+        }
+    </style>
 </head>
 <body>
+    <div class="top-left-icon">
+        <img src="{{ url_for('static', filename='imgs/DineNY-ICON.png') }}" alt="DineNY Icon">
+    </div>
     <header>
         <nav class="navbar">
-            <a href="#" class="nav-logo">Restaurant Reviews</a>
             <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}" class="nav-link">Home</a></li>
                 <li><a href="{{ url_for('restaurants') }}" class="nav-link">View Restaurants</a></li>
                 <li><a href="{{ url_for('reviews') }}" class="nav-link">My Reviews</a></li>
                 <li><a href="{{ url_for('ai_recommendations') }}" class="nav-link">AI Recommendations</a></li>
@@ -19,36 +59,12 @@
         </nav>
     </header>
 
-    <main class="container">
-        <section class="hero">
-            <div class="hero-content">
-                <h1>Welcome to Restaurant Reviews!</h1>
-                <p>Discover top restaurants, manage your reviews, and get personalized AI recommendations.</p>
-                <a href="{{ url_for('restaurants') }}" class="btn-primary">Explore Now</a>
-            </div>
-        </section>
-
-        <section class="info">
-            <h2>What We Offer</h2>
-            <div class="info-cards">
-                <div class="info-card">
-                    <h3>Discover Restaurants</h3>
-                    <p>Browse through a variety of restaurants and find your next favorite spot.</p>
-                </div>
-                <div class="info-card">
-                    <h3>Manage Reviews</h3>
-                    <p>Update or delete your reviews and keep track of your feedback.</p>
-                </div>
-                <div class="info-card">
-                    <h3>Personalized Recommendations</h3>
-                    <p>Get AI-powered suggestions based on your preferences and past reviews.</p>
-                </div>
-            </div>
-        </section>
+    <main>
+        <a href="{{ url_for('restaurants') }}" class="btn-primary">Explore Now</a>
     </main>
 
     <footer>
-        <p>&copy; 2024 My Restaurant App. All rights reserved.</p>
+        <p>&copy; 2024 Dine NY App. All rights reserved.</p>
     </footer>
 </body>
 </html>

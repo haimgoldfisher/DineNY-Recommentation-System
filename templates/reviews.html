@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block title %}My Reviews{% endblock %}
 {% block content %}
-<h1>My Reviews</h1>
+<h1 style="color: white;">My Reviews</h1>
 <div class="review-list">
     {% for review in reviews %}
     <div class="review-block" onclick="showReviewOptions('{{ review.gmap_id }}')">
@@ -36,6 +36,7 @@
 <!-- Update Review Popup -->
 <div id="updateReviewPopup" class="form-popup">
     <div class="form-container">
+        <button class="close-button" onclick="closePopup()">X</button>
         <h1 id="popupTitle">Update Review</h1>
         <img id="popupImage" src="" alt="Restaurant Image">
         <div id="popupInfo"></div>
@@ -46,8 +47,6 @@
             <img class="star" src="{{ url_for('static', filename='imgs/star-off.png') }}" data-value="4" alt="Star 4">
             <img class="star" src="{{ url_for('static', filename='imgs/star-off.png') }}" data-value="5" alt="Star 5">
         </div>
-        <button type="button" class="btn-primary" onclick="submitRating()">Submit</button>
-        <button type="button" class="btn cancel" onclick="closePopup()">Cancel</button>
     </div>
 </div>
 
@@ -59,6 +58,18 @@
         <div class="confirmation-buttons">
             <button type="button" class="btn-primary" onclick="confirmRemoveReview()">Yes</button>
             <button type="button" class="btn cancel" onclick="closePopup()">No</button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Popup -->
+<div id="confirmationPopup" class="form-popup">
+    <div class="form-container">
+        <h1>Confirm Rating</h1>
+        <p>Are you sure you want to give <span id="ratingValue"></span> rating?</p>
+        <div class="confirmation-buttons">
+            <button type="button" class="btn-primary" onclick="submitRating()">Yes</button>
+            <button type="button" class="btn cancel" onclick="closeConfirmationPopup()">No</button>
         </div>
     </div>
 </div>
@@ -76,6 +87,9 @@
         document.getElementById("reviewOptionsPopup").style.display = "none";
         document.getElementById("updateReviewPopup").style.display = "none";
         document.getElementById("removeReviewConfirmationPopup").style.display = "none";
+        document.getElementById("confirmationPopup").style.display = "none";
+        currentRating = 0; // Reset the current rating
+        updateStars(); // Reset the stars visually
     }
 
     function updateReview() {
@@ -102,6 +116,11 @@
         updateReview(); // Fetch review details and display update popup
     }
 
+    function showUpdateConfirmationPopup() {
+        document.getElementById("ratingValue").innerText = currentRating;
+        document.getElementById("confirmationPopup").style.display = "block";
+    }
+
     function submitRating() {
         fetch('/api/update_review', {
             method: 'POST',
@@ -116,8 +135,9 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert(`You have updated the rating to ${currentRating} stars.`);
                 closePopup();
+                alert(`You have updated the rating to ${currentRating} stars.`);
+                location.reload();
             } else {
                 alert('Error updating the rating.');
             }
@@ -142,8 +162,9 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Review removed.');
                 closePopup();
+                alert('Review removed.');
+                location.reload();
             } else {
                 alert('Error removing the review.');
             }
@@ -151,8 +172,10 @@
         .catch(error => console.error('Error removing review:', error));
     }
 
-    function closeRemoveConfirmationPopup() {
-        closePopup();
+    function closeConfirmationPopup() {
+        document.getElementById("confirmationPopup").style.display = "none";
+        currentRating = 0; // Reset the current rating
+        updateStars(); // Reset the stars visually
     }
 
     // Star rating logic for update review popup
@@ -190,25 +213,14 @@
         });
     }
 
-    function showUpdateConfirmationPopup() {
-        // Implement the function to show a confirmation popup after selecting stars
-        alert(`You have selected ${currentRating} stars. Are you sure about your choice?`);
-    }
-
-    // Function to generate star emojis
     function generateStars(rating) {
         let stars = '';
         for (let i = 0; i < 5; i++) {
-            if (i < rating) {
-                stars += '★'; // filled star
-            } else {
-                stars += '☆'; // empty star
-            }
+            stars += i < rating ? '★' : '☆';
         }
         return stars;
     }
 
-    // Update the stars display for each review
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.stars').forEach(span => {
             const rating = parseInt(span.innerText, 10);

@@ -1,11 +1,12 @@
 import random
 import time
-
+import json
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
 from flask_login import LoginManager, login_user, login_required, current_user, UserMixin, logout_user
 import pymongo
 import logging
 import os
+# from kafka import KafkaProducer
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your_secret_key')  # Use environment variable
@@ -20,6 +21,12 @@ users_collection = mongo_db['Users']
 reviews_collection = mongo_db['Reviews']
 restaurants_collection = mongo_db['Restaurants']
 recommendations_collection = mongo_db['Recommendations']
+
+# # Initialize Kafka producer
+# producer = KafkaProducer(
+#     bootstrap_servers=['localhost:9092'],
+#     value_serializer=lambda x: json.dumps(x).encode('utf-8')
+# )
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -69,11 +76,50 @@ def login():
 
 
 def generate_unique_user_id(length=18):
-    """Generate a unique user ID consisting only of digits."""
+    # Generate a unique user ID consisting only of digits
     while True:
         user_id = ''.join([str(random.randint(0, 9)) for _ in range(length)])
         if not users_collection.find_one({"user_id": user_id}):
             return user_id
+
+def add_default_recommandations(user_id):
+    try:
+        # Fetch top 7 rated restaurants
+        top_rated_restaurants = list(
+            restaurants_collection.find()
+            .sort("Rating", -1)  # Sort by rating in descending order
+            .limit(7)
+        )
+
+        # Fetch top 6 reviewed restaurants
+        top_reviewed_restaurants = list(
+            restaurants_collection.find()
+            .sort("Reviews", -1)  # Sort by number of reviews in descending order
+            .limit(6)
+        )
+
+        # Combine the lists
+        combined_restaurants = top_rated_restaurants + top_reviewed_restaurants
+
+        # Create recommendations array with random scores
+        recommendations = [
+            {
+                "gmap_id": restaurant['gmap_id'],
+                "score": random.uniform(1, 10)  # Assign a random score between 1 and 10
+            }
+            for restaurant in combined_restaurants
+        ]
+
+        # Insert recommendations into the Recommendations collection
+        recommendations_collection.insert_one({
+            "user_id": user_id,
+            "recommendations": recommendations
+        })
+
+        logging.info(f"Default recommendations added for user_id: {user_id}")
+
+    except Exception as e:
+        logging.error(f"Error adding default recommendations: {e}")
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -88,6 +134,7 @@ def register():
             try:
                 users_collection.insert_one({"user_id": user_id, "ratings": []})
                 flash('Registration successful! You can now log in.')
+                # add_default_recommandations(user_id) # Non-empty recommendation list option
                 return redirect(url_for('login'))
             except Exception as e:
                 logging.error(f"Error registering user: {e}")
@@ -351,6 +398,7 @@ def delete_review():
         logging.error(f"Error deleting review: {e}")
         return jsonify({"success": False, "error": "An error occurred while deleting the review. Please try again later."}), 500
 
+
 @app.route('/ai_recommendations')
 @login_required
 def ai_recommendations():
@@ -424,6 +472,43 @@ def review_details(gmap_id):
         return jsonify(data)
     else:
         return jsonify({'error': 'Restaurant not found'}), 404
+
+
+# @app.route('/click_event', methods=['POST'])
+# @login_required
+# def click_event():
+#     try:
+#         user_id = current_user.id
+#         gmap_id = request.form.get('gmap_id')
+#         popup_type = request.form.get('popup_type')  # Added parameter to distinguish popup type
+#         timestamp = int(time.time() * 1000)  # Current timestamp in milliseconds
+#
+#         if not gmap_id:
+#             return jsonify({"success": False, "error": "Missing gmap_id"}), 400
+#
+#         if popup_type not in ['ai', 'restaurant']:
+#             return jsonify({"success": False, "error": "Invalid popup_type"}), 400
+#
+#         # Create event data
+#         event_data = {
+#             'user_id': user_id,
+#             'gmap_id': gmap_id,
+#             'popup_type': popup_type,  # Include popup type in the event data
+#             'timestamp': timestamp,
+#             'event': 'click'
+#         }
+#
+#         # Log event data
+#         logging.info(f"Sending event data: {event_data}")
+#
+#         # Send event data to Kafka
+#         producer.send('click_events', value=event_data)
+#         producer.flush()
+#
+#         return jsonify({"success": True}), 200
+#     except Exception as e:
+#         logging.error(f"Error producing click event: {e}")
+#         return jsonify({"success": False, "error": "An error occurred while producing the click event."}), 500
 
 
 if __name__ == '__main__':

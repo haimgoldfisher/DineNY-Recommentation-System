@@ -20,9 +20,11 @@
     </script>
 </head>
 <body>
+    <div class="top-left-icon">
+        <img src="{{ url_for('static', filename='imgs/DineNY-ICON.png') }}" alt="DineNY Icon">
+    </div>
     <header>
         <nav class="navbar">
-            <div class="container">
                 <ul class="nav-links">
                     <li><a href="{{ url_for('index') }}" class="nav-link">Home</a></li>
                     <li><a href="{{ url_for('restaurants') }}" class="nav-link">Restaurants</a></li>
@@ -30,7 +32,6 @@
                     <li><a href="{{ url_for('ai_recommendations') }}" class="nav-link">AI Recommendations</a></li>
                     <li><a href="{{ url_for('logout') }}" class="nav-link">Logout</a></li>
                 </ul>
-            </div>
         </nav>
     </header>
     <main>
@@ -39,9 +40,7 @@
         </div>
     </main>
     <footer>
-        <div class="container">
-            <p>&copy; 2024 My Restaurant App</p>
-        </div>
+        <p>&copy; 2024 Dine NY App. All rights reserved.</p>
     </footer>
     <div id="popup" class="popup" onclick="hidePopup()"></div>
 </body>

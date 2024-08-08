@@ -5,8 +5,19 @@ body {
     font-family: 'Poppins', sans-serif;
     margin: 0;
     padding: 0;
-    background: linear-gradient(135deg, #e0eafc, #cfdef3); /* Updated background gradient */
+    background: #6f9dcf;
     color: #333;
+}
+
+.top-left-icon {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+.top-left-icon img {
+    height: 100px;
+    width: auto;
 }
 
 * {
@@ -27,7 +38,7 @@ h1, h2 {
 
 /* Navigation Bar */
 header {
-    background-color: #007bff; /* Keep existing color */
+    background-color: #20416d;
     padding: 15px 0;
 }
 
@@ -69,12 +80,12 @@ header {
 }
 
 .nav-link:hover {
-    background-color: #0056b3; /* Keep existing color */
+    background-color: #5b95c3;
 }
 
 /* Hero Section */
 .hero {
-    background: #007bff; /* Darker background for the hero section */
+    background: #0056b3;
     color: #fff;
     padding: 60px 20px;
     border-radius: 10px;
@@ -92,7 +103,8 @@ header {
     margin-bottom: 20px;
 }
 
-.btn-primary {
+/* General button styling */
+a.btn-primary, button.btn-primary {
     background-color: #ff6600;
     color: #fff;
     padding: 15px 30px;
@@ -100,10 +112,33 @@ header {
     text-decoration: none;
     font-size: 1.2em;
     transition: background-color 0.3s;
+    border: none;
+    cursor: pointer;
 }
 
-.btn-primary:hover {
+/* Specific hover styling */
+a.btn-primary:hover, button.btn-primary:hover {
     background-color: #e65c00;
+}
+
+/* Ensure no additional styles are applied */
+button {
+    background: none;
+    border: none;
+    padding: 5;
+    font: inherit;
+}
+
+.sort-buttons a, .sort-buttons button {
+    margin-right: 10px;
+}
+
+.sort-buttons a:last-child, .sort-buttons button:last-child {
+    margin-right: 0;
+}
+
+.sort-buttons {
+    margin-bottom: 20px;
 }
 
 /* Restaurant and Review Blocks */
@@ -122,7 +157,7 @@ header {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     transition: box-shadow 0.3s ease, transform 0.3s ease;
-    flex: 1 1 calc(50% - 20px); /* Adjusted to 2 blocks per line */
+    flex: 1 1 calc(50% - 20px);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -175,7 +210,7 @@ header {
 @media (max-width: 768px) {
     .restaurant-block,
     .review-block {
-        flex: 1 1 100%; /* Stack blocks vertically on smaller screens */
+        flex: 1 1 100%;
         max-width: 100%;
     }
 }
@@ -252,6 +287,34 @@ header {
     margin: 0 auto;
 }
 
+/* Consistent Close Button Styles */
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    line-height: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+/* Hover and Active States */
+.close-button:hover {
+    background-color: #e64a4a;
+}
+
+.close-button:active {
+    background-color: #c62828;
+    transform: scale(0.95);
+}
+
 /* Star Rating */
 .star-rating {
     display: flex;
@@ -281,7 +344,7 @@ header {
 
 /* Footer */
 footer {
-    background-color: #007bff;
+    background-color: #20416d;
     color: #fff;
     padding: 15px 0;
     text-align: center;
@@ -383,4 +446,45 @@ footer {
 
 .confirmation-buttons .btn.cancel:hover {
     background-color: #e53935;
+}
+
+/* Add this CSS to your stylesheet */
+
+.sort-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.sort-buttons .btn-primary {
+    background-color: #e7743b;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.sort-buttons .btn-primary:hover,
+.sort-buttons .btn-primary:focus {
+    background-color: #0056b3; /* Darker blue background on hover/focus */
+}
+
+.sort-buttons .btn-primary.active {
+    background-color: #004080; /* Darker blue background for the active button */
+}
+
+/* Style for the search input field */
+.search-form input[type="text"] {
+    width: 100%; /* Full width */
+    padding: 10px;
+    border: 1px solid #ccc; /* Light gray border */
+    border-radius: 5px; /* Rounded corners */
+    font-size: 16px; /* Font size */
+    box-sizing: border-box; /* Include padding in width */
+    margin-bottom: 10px; /* Space below the input field */
 }

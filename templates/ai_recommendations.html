@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block title %}AI Recommendations{% endblock %}
 {% block content %}
-<h1>AI Recommendations</h1>
+<h1 style="color: white;">AI Recommendations</h1>
 <div class="restaurant-list">
     {% for recommendation in recommendations %}
         <div class="restaurant-block" data-gmap-id="{{ recommendation.gmap_id }}" onclick="showDetails(this)">
@@ -22,6 +22,7 @@
         <h1 id="popupName">Restaurant Name</h1>
         <img id="popupImage" src="" alt="Restaurant Image">
         <p id="popupAddress">Address: </p>
+        <p id="popupURL">URL: </p>
         <p id="popupRating">Average Rating: </p>
         <p id="popupReviews">Number of Reviews: </p>
     </div>
@@ -43,14 +44,16 @@
                 document.getElementById("popupName").textContent = data.name;
                 document.getElementById("popupImage").src = data.img_url;
                 document.getElementById("popupAddress").textContent = `Address: ${data.address}`;
-                document.getElementById("popupReviews").textContent = `Number of Reviews: ${data.url}`;
-                const formattedRating = data.rating.toFixed(1);
-                document.getElementById("popupRating").textContent = `Average Rating: ${formattedRating}`;
+                document.getElementById("popupURL").innerHTML = `URL: <a href="${data.url}" target="_blank" style="color: blue; text-decoration: underline;">Click Here</a>`;
+                document.getElementById("popupRating").textContent = `Average Rating: ${data.rating.toFixed(1)}`;
                 document.getElementById("popupReviews").textContent = `Number of Reviews: ${data.reviews}`;
 
                 // Show the popup and disable scrolling
                 document.getElementById("detailsPopup").classList.add("show");
                 document.body.style.overflow = "hidden";
+
+                // Send click event to the backend
+                sendClickEvent(gmapId, 'ai');
             })
             .catch(error => console.error('Error fetching details:', error));
     }
@@ -58,6 +61,28 @@
     function closePopup() {
         document.getElementById("detailsPopup").classList.remove("show");
         document.body.style.overflow = "";
+    }
+
+    function sendClickEvent(gmapId, popupType) {
+        fetch('/click_event', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                gmap_id: gmapId,
+                popup_type: popupType
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Click event logged successfully');
+            } else {
+                console.error('Error logging click event:', data.error);
+            }
+        })
+        .catch(error => console.error('Error:', error));
     }
 </script>
 {% endblock %}
