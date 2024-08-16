@@ -3,6 +3,7 @@ from pyspark.ml.recommendation import ALS
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml.feature import StringIndexer
 from pyspark.sql.functions import col, explode, collect_list, struct
+from clustering_training import run_clustering
 
 # Initialize Spark session with optimized configurations
 spark = SparkSession.builder \
@@ -35,8 +36,11 @@ print("Indexing user and restaurant columns...")
 user_indexer = StringIndexer(inputCol="user_id", outputCol="user_index").fit(df_reviews)
 rest_indexer = StringIndexer(inputCol="gmap_id", outputCol="rest_id").fit(df_reviews)
 
-df_reviews = user_indexer.transform(df_reviews)
-df_reviews = rest_indexer.transform(df_reviews)
+user_indexer.write().overwrite().save('user_indexer')
+rest_indexer.write().overwrite().save('rest_indexer')
+
+# df_reviews = user_indexer.transform(df_reviews)
+# df_reviews = rest_indexer.transform(df_reviews)
 
 # Select relevant columns and split into training and test sets
 df_final = df_reviews.select("user_index", "rest_id", "rating").filter(df_reviews.rating.isNotNull())
@@ -94,3 +98,6 @@ print("Recommendations saved to MongoDB.")
 
 # Stop the Spark session
 spark.stop()
+
+# Run Clustering Algorithm
+run_clustering(k=10)

@@ -6,6 +6,7 @@ from flask_login import LoginManager, login_user, login_required, current_user, 
 import pymongo
 import logging
 import os
+from get_cluster import get_cluster_recommandations
 # from kafka import KafkaProducer
 
 app = Flask(__name__)
@@ -82,45 +83,6 @@ def generate_unique_user_id(length=18):
         if not users_collection.find_one({"user_id": user_id}):
             return user_id
 
-def add_default_recommandations(user_id):
-    try:
-        # Fetch top 7 rated restaurants
-        top_rated_restaurants = list(
-            restaurants_collection.find()
-            .sort("Rating", -1)  # Sort by rating in descending order
-            .limit(7)
-        )
-
-        # Fetch top 6 reviewed restaurants
-        top_reviewed_restaurants = list(
-            restaurants_collection.find()
-            .sort("Reviews", -1)  # Sort by number of reviews in descending order
-            .limit(6)
-        )
-
-        # Combine the lists
-        combined_restaurants = top_rated_restaurants + top_reviewed_restaurants
-
-        # Create recommendations array with random scores
-        recommendations = [
-            {
-                "gmap_id": restaurant['gmap_id'],
-                "score": random.uniform(1, 10)  # Assign a random score between 1 and 10
-            }
-            for restaurant in combined_restaurants
-        ]
-
-        # Insert recommendations into the Recommendations collection
-        recommendations_collection.insert_one({
-            "user_id": user_id,
-            "recommendations": recommendations
-        })
-
-        logging.info(f"Default recommendations added for user_id: {user_id}")
-
-    except Exception as e:
-        logging.error(f"Error adding default recommendations: {e}")
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -134,7 +96,6 @@ def register():
             try:
                 users_collection.insert_one({"user_id": user_id, "ratings": []})
                 flash('Registration successful! You can now log in.')
-                # add_default_recommandations(user_id) # Non-empty recommendation list option
                 return redirect(url_for('login'))
             except Exception as e:
                 logging.error(f"Error registering user: {e}")
@@ -248,6 +209,36 @@ def reviews():
     )
 
 
+def update_ai_recommendations(user_id):
+    # Fetch user reviews
+    user_reviews = users_collection.find_one({"user_id": user_id}, {"ratings": 1})
+
+    if not user_reviews or not user_reviews.get('ratings'):
+        # No reviews for the user, delete existing recommendations and return empty list
+        recommendations_collection.delete_one({"user_id": user_id})
+        return []
+
+    # Get the list of gmap_ids that the user has reviewed
+    reviewed_gmap_ids = {review['gmap_id'] for review in user_reviews['ratings']}
+
+    # Fetch the top 13 recommendations from the cluster recommendations
+    recommendations = get_cluster_recommandations(user_id)
+
+    # Filter out recommendations that the user has already reviewed
+    filtered_recommendations = [
+                                   rec for rec in recommendations
+                                   if rec['gmap_id'] not in reviewed_gmap_ids
+                               ][:13]  # Limit to top 13 recommendations
+
+    # Update or insert recommendations for the user
+    recommendations_collection.update_one(
+        {"user_id": user_id},
+        {"$set": {"recommendations": filtered_recommendations}},
+        upsert=True
+    )
+    return filtered_recommendations
+
+
 def update_restaurant_stats(gmap_id):
     reviews = list(reviews_collection.find({"gmap_id": gmap_id}))
     num_reviews = len(reviews)
@@ -297,6 +288,11 @@ def update_user_reviews(user_id, gmap_id, rating=None, insert=True):
                 {"$pull": {"ratings": {"gmap_id": gmap_id}}}
             )
             logging.info(f"Delete result: {result.raw_result}")
+        try:
+            update_ai_recommendations(user_id)
+        except Exception as e:
+            logging.error(f"Error creating new AI recommendations: {e}")
+            return False
         return True
     except Exception as e:
         logging.error(f"Error updating user reviews: {e}")
@@ -329,6 +325,11 @@ def add_review():
 
         if update_user_reviews(user_id, gmap_id, rating):
             update_restaurant_stats(gmap_id)
+            try:
+                update_ai_recommendations(user_id)
+            except Exception as e:
+                logging.error(f"Error creating new AI recommendations: {e}")
+                return jsonify({"success": False, "error": "An error occurred while creating new AI recommendations."}), 500
             return jsonify({"success": True})
         else:
             return jsonify({"success": False, "error": "An error occurred while updating the user reviews."}), 500
