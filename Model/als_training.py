@@ -4,12 +4,16 @@ from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml.feature import StringIndexer
 from pyspark.sql.functions import col, explode, collect_list, struct
 from clustering_training import run_clustering
+import os
+
+# Mongo URI getter from env. var
+mongo_uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
 
 # Initialize Spark session with optimized configurations
 spark = SparkSession.builder \
     .appName("Restaurant Recommender") \
-    .config("spark.mongodb.input.uri", "mongodb://localhost:27017/Google-Maps-Restaurant.Reviews") \
-    .config("spark.mongodb.output.uri", "mongodb://localhost:27017/Google-Maps-Restaurant.Recommendations") \
+    .config("spark.mongodb.input.uri", f"{mongo_uri}Google-Maps-Restaurant.Reviews") \
+    .config("spark.mongodb.output.uri", f"{mongo_uri}Google-Maps-Restaurant.Recommendations") \
     .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.12:3.0.1") \
     .config("spark.executor.memory", "8g") \
     .config("spark.driver.memory", "8g") \
@@ -22,12 +26,12 @@ spark = SparkSession.builder \
     .config("spark.executor.heartbeatInterval", "200s") \
     .getOrCreate()
 
-print("Loading and preprocessing data...")
+print("Loading and preprocessing DB...")
 
-# Load data from MongoDB
+# Load DB from MongoDB
 df_reviews = spark.read.format("com.mongodb.spark.sql.DefaultSource").load()
 
-# Check the initial data
+# Check the initial DB
 df_reviews.show()
 
 # Index the user_id and gmap_id columns
@@ -48,7 +52,7 @@ df_final = df_final.repartition(200)
 
 train, test = df_final.randomSplit([0.8, 0.2])
 
-print("Transforming training data...")
+print("Transforming training DB...")
 train.show()
 
 # Train the ALS model
@@ -68,7 +72,7 @@ rmse = evaluator.evaluate(predictions)
 print(f"Root-mean-square error = {rmse}")
 
 # Save the model with overwrite option
-model.write().overwrite().save("Recommendation-Model")
+# model.write().overwrite().save("Recommendation-Model")
 
 # Generate top 13 recommendations for each user
 user_recs = model.recommendForAllUsers(13)
@@ -100,4 +104,4 @@ print("Recommendations saved to MongoDB.")
 spark.stop()
 
 # Run Clustering Algorithm
-run_clustering(k=10)
+run_clustering()

@@ -1,4 +1,7 @@
+numpy~=1.26.4
 pymongo~=4.8.0
 Flask~=3.0.3
+Flask-Login~=0.6.3
 selenium~=4.23.1
-pyspark~=3.5.1
+confluent-kafka~=2.5.0
+kafka-python~=2.0.2

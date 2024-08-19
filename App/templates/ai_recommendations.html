@@ -22,7 +22,7 @@
         <h1 id="popupName">Restaurant Name</h1>
         <img id="popupImage" src="" alt="Restaurant Image">
         <p id="popupAddress">Address: </p>
-        <p id="popupURL">URL: </p>
+        <p id="popupURL">URL: <a href="#" id="popupGmapLink" target="_blank" style="color: blue; text-decoration: underline;">Click Here</a></p>
         <p id="popupRating">Average Rating: </p>
         <p id="popupReviews">Number of Reviews: </p>
     </div>
@@ -44,16 +44,19 @@
                 document.getElementById("popupName").textContent = data.name;
                 document.getElementById("popupImage").src = data.img_url;
                 document.getElementById("popupAddress").textContent = `Address: ${data.address}`;
-                document.getElementById("popupURL").innerHTML = `URL: <a href="${data.url}" target="_blank" style="color: blue; text-decoration: underline;">Click Here</a>`;
+                const gmapLink = document.getElementById("popupGmapLink");
+                gmapLink.href = data.url;
                 document.getElementById("popupRating").textContent = `Average Rating: ${data.rating.toFixed(1)}`;
                 document.getElementById("popupReviews").textContent = `Number of Reviews: ${data.reviews}`;
+
+                // Add click event listener to the Google Maps link
+                gmapLink.addEventListener('click', function() {
+                    sendClickEvent(gmapId, 'gmap');
+                });
 
                 // Show the popup and disable scrolling
                 document.getElementById("detailsPopup").classList.add("show");
                 document.body.style.overflow = "hidden";
-
-                // Send click event to the backend
-                sendClickEvent(gmapId, 'ai');
             })
             .catch(error => console.error('Error fetching details:', error));
     }
@@ -63,26 +66,20 @@
         document.body.style.overflow = "";
     }
 
-    function sendClickEvent(gmapId, popupType) {
-        fetch('/click_event', {
+    function sendClickEvent(gmapId, eventType) {
+        fetch(`/click/${gmapId}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/json'
             },
-            body: new URLSearchParams({
-                gmap_id: gmapId,
-                popup_type: popupType
-            })
+            body: JSON.stringify({ event_type: eventType })
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log('Click event logged successfully');
-            } else {
-                console.error('Error logging click event:', data.error);
+        .then(response => {
+            if (!response.ok) {
+                console.error('Failed to send click event');
             }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error sending click event:', error));
     }
 </script>
 {% endblock %}

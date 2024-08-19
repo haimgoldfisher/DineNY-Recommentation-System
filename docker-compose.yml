@@ -2,16 +2,18 @@ version: '3.8'
 
 services:
   zookeeper:
-    image: bitnami/zookeeper:latest
+    image: confluentinc/cp-zookeeper:latest
     ports:
       - "2181:2181"
     environment:
       - ZOOKEEPER_CLIENT_PORT=2181
       - ZOOKEEPER_TICK_TIME=2000
       - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - app-network
 
   kafka:
-    image: bitnami/kafka:latest
+    image: wurstmeister/kafka:latest
     ports:
       - "9092:9092"
     depends_on:
@@ -21,13 +23,73 @@ services:
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT
       - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
-      - KAFKA_LISTENER_NAME=PLAINTEXT
-    extra_hosts:
-      - "localhost:host-gateway"  # This line allows Kafka to connect to Zookeeper using localhost
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+    volumes:
+      - kafka-data:/bitnami/kafka/data
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 9092"]
+      test: ["CMD-SHELL", "nc -z kafka 9092"]
       interval: 30s
       retries: 3
       start_period: 30s
       timeout: 30s
+    networks:
+      - app-network
+
+  flask-app:
+    image: haimgoldfisher/app-back-front:latest
+    ports:
+      - "5050:5050"
+    depends_on:
+      - kafka
+      - mongo
+    environment:
+      - SECRET_KEY=your_secret_key
+      - MONGO_URI=mongodb://mongo:27017/
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC=analytics_topic
+      - MONGO_DB=Google-Maps-Restaurant
+    networks:
+      - app-network
+
+  mongo:
+    image: haimgoldfisher/google-maps-restaurants-reviews-db:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+  recommendation_model:
+    image: haimgoldfisher/recommendation_model:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/
+      - MONGO_DB=Google-Maps-Restaurant
+    networks:
+      - app-network
+
+  kafka_consumer:
+    image: haimgoldfisher/kafka_consumer:latest
+    depends_on:
+      - kafka
+      - mongo
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC=analytics_topic
+      - BACKEND_URL=http://flask-app:5050/events
+      - MONGO_URI=mongodb://mongo:27017/
+      - MONGO_DB=Google-Maps-Restaurant
+    networks:
+      - app-network
+
+volumes:
+  kafka-data:
+  mongo-data:
+
+networks:
+  app-network:
+    driver: bridge

@@ -17,6 +17,22 @@
             $('#popup').removeClass('show');
             $('#popup').hide();
         }
+
+        // Add exit event listener
+        window.addEventListener('beforeunload', function (event) {
+            // Send exit event to backend
+            sendExitEvent();
+        });
+
+        function sendExitEvent() {
+            fetch('/exit_event', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ event_type: 'exit' })
+            }).catch(error => console.error('Error sending exit event:', error));
+        }
     </script>
 </head>
 <body>

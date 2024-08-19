@@ -2,11 +2,13 @@ import numpy as np
 from pymongo import MongoClient
 from dists import cos_sim_mag_dist as dist
 from collections import Counter
+import os
 
 def load_from_mongodb():
     """Load KMeans centroids and feature columns from MongoDB."""
     # MongoDB connection details
-    client = MongoClient('mongodb://localhost:27017/')
+    mongo_uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
+    client = MongoClient(mongo_uri)
     db = client['Google-Maps-Restaurant']
     metadata_collection = db['Metadata']
 
@@ -21,9 +23,9 @@ def load_from_mongodb():
     return columns, centroids
 
 def format_user_data(user_data, columns):
-    """Format user data into the same format used during training."""
+    """Format user DB into the same format used during training."""
     user_ratings = {item['gmap_id']: item['rating'] for item in user_data['ratings'] if 'rating' in item}
-    # Reindex user data to match the columns used in training
+    # Reindex user DB to match the columns used in training
     formatted_data = np.array([user_ratings.get(col, 0) for col in columns])
     return formatted_data
 
@@ -50,7 +52,7 @@ def count_users_per_cluster():
     for user_data in all_users:
         if i > 1000:
             continue
-        # Format the user data
+        # Format the user DB
         user_vector = format_user_data(user_data, columns)
 
         # Get the user's cluster

@@ -9,7 +9,7 @@ output_file_path = 'data/reviews.json'
 with open(restaurants_file_path, 'r') as text_file:
     gmap_ids_in_file = set(line.strip() for line in text_file)
 
-# Prepare a list to store cleaned data
+# Prepare a list to store cleaned DB
 cleaned_data_list = []
 
 # Read and process each JSON object in the input file
@@ -32,8 +32,8 @@ with open(input_file_path, 'r') as infile:
             except json.JSONDecodeError as e:
                 print(f"Error decoding JSON on line: {line}\n{e}")
 
-# Save the cleaned data to a new JSON file
+# Save the cleaned DB to a new JSON file
 with open(output_file_path, 'w') as outfile:
     json.dump(cleaned_data_list, outfile, indent=4)
 
-print(f"Cleaned data saved to {output_file_path}")
+print(f"Cleaned DB saved to {output_file_path}")

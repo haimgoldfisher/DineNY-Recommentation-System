@@ -1,12 +1,13 @@
 import numpy as np
 from pymongo import MongoClient
 from dists import cos_sim_mag_dist as dist
-
+import os
 
 def load_from_mongodb():
     """Load KMeans centroids and feature columns from MongoDB."""
     # MongoDB connection details
-    client = MongoClient('mongodb://localhost:27017/')
+    mongo_uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
+    client = MongoClient(mongo_uri)
     db = client['Google-Maps-Restaurant']
     metadata_collection = db['Metadata']
 
@@ -27,7 +28,7 @@ users_collection = db['Users']
 clusters_collection = db['Clusters']
 
 def format_user_data(user_data, columns):
-    """Format user data into the same format used during training."""
+    """Format user DB into the same format used during training."""
     user_ratings = {item['gmap_id']: item['rating'] for item in user_data['ratings'] if 'rating' in item}
     formatted_data = np.array([user_ratings.get(col, 0) for col in columns])
     return formatted_data
@@ -54,12 +55,12 @@ def main(user_id):
     # Load KMeans centroids and feature columns from MongoDB
     columns, centroids = load_from_mongodb()
 
-    # Load user data from MongoDB
+    # Load user DB from MongoDB
     user_data = users_collection.find_one({'user_id': user_id})
     if not user_data:
-        raise ValueError(f"No data found for user with ID {user_id}")
+        raise ValueError(f"No DB found for user with ID {user_id}")
 
-    # Format the user data
+    # Format the user DB
     user_vector = format_user_data(user_data, columns)
 
     # Get the user's cluster

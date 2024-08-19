@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import random
 import time
 import json
@@ -7,36 +8,65 @@ import pymongo
 import logging
 import os
 from get_cluster import get_cluster_recommandations
-# from kafka import KafkaProducer
+from kafka import KafkaProducer
+from kafka.admin import KafkaAdminClient, NewTopic
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your_secret_key')  # Use environment variable
+
+# Load environment variables
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your_secret_key')  # Default if not set
+mongo_uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
+kafka_bootstrap_servers = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
+kafka_topic = os.getenv('KAFKA_TOPIC', 'analytics_topic')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
 # MongoDB configuration
-mongo_client = pymongo.MongoClient(os.getenv('MONGO_URI', 'mongodb://localhost:27017/'))
+mongo_client = pymongo.MongoClient(mongo_uri)
 mongo_db = mongo_client['Google-Maps-Restaurant']
 users_collection = mongo_db['Users']
 reviews_collection = mongo_db['Reviews']
 restaurants_collection = mongo_db['Restaurants']
 recommendations_collection = mongo_db['Recommendations']
+analytics_collection = mongo_db['Analytics']
 
-# # Initialize Kafka producer
-# producer = KafkaProducer(
-#     bootstrap_servers=['localhost:9092'],
-#     value_serializer=lambda x: json.dumps(x).encode('utf-8')
-# )
+
+# Function to create Kafka topic
+def create_kafka_topic(topic_name, kafka_bootstrap_servers):
+    admin_client = KafkaAdminClient(bootstrap_servers=kafka_bootstrap_servers)
+
+    topic_list = [NewTopic(name=topic_name, num_partitions=1, replication_factor=1)]
+
+    try:
+        admin_client.create_topics(new_topics=topic_list, validate_only=False)
+        logging.info(f"Topic '{topic_name}' created successfully.")
+    except Exception as e:
+        logging.warning(f"Topic '{topic_name}' might already exist or failed to create: {e}")
+    finally:
+        admin_client.close()
+
+
+# Create Kafka topic before initializing the producer
+create_kafka_topic(kafka_topic, kafka_bootstrap_servers)
+
+# Initialize Kafka producer
+producer = KafkaProducer(
+    bootstrap_servers=kafka_bootstrap_servers,
+    value_serializer=lambda x: json.dumps(x).encode('utf-8'),
+    key_serializer=lambda k: str(k).encode('utf-8')  # Optionally serialize keys
+)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+
 # User model for Flask-Login
 class User(UserMixin):
     def __init__(self, user_id):
         self.id = user_id
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -114,6 +144,7 @@ def register():
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
 
 @app.route('/restaurants', methods=['GET'])
 @login_required
@@ -245,7 +276,8 @@ def update_restaurant_stats(gmap_id):
     avg_rating = sum(review['rating'] for review in reviews) / num_reviews if num_reviews > 0 else 0
 
     # Log the recalculated statistics
-    logging.info(f"Updating stats for gmap_id: {gmap_id}. Number of reviews: {num_reviews}, Average rating: {avg_rating}")
+    logging.info(
+        f"Updating stats for gmap_id: {gmap_id}. Number of reviews: {num_reviews}, Average rating: {avg_rating}")
 
     restaurants_collection.update_one(
         {"gmap_id": gmap_id},
@@ -329,13 +361,15 @@ def add_review():
                 update_ai_recommendations(user_id)
             except Exception as e:
                 logging.error(f"Error creating new AI recommendations: {e}")
-                return jsonify({"success": False, "error": "An error occurred while creating new AI recommendations."}), 500
+                return jsonify(
+                    {"success": False, "error": "An error occurred while creating new AI recommendations."}), 500
             return jsonify({"success": True})
         else:
             return jsonify({"success": False, "error": "An error occurred while updating the user reviews."}), 500
     except Exception as e:
         logging.error(f"Error adding review: {e}")
-        return jsonify({"success": False, "error": "An error occurred while adding the review. Please try again later."}), 500
+        return jsonify(
+            {"success": False, "error": "An error occurred while adding the review. Please try again later."}), 500
 
 
 @app.route('/api/update_review', methods=['POST'])
@@ -391,13 +425,14 @@ def delete_review():
         )
 
         logging.info(f"Review deleted for user_id: {user_id}, gmap_id: {gmap_id}")
-        if update_user_reviews(user_id, gmap_id,None,False):
+        if update_user_reviews(user_id, gmap_id, None, False):
             update_restaurant_stats(gmap_id)
             return jsonify({"success": True})
 
     except Exception as e:
         logging.error(f"Error deleting review: {e}")
-        return jsonify({"success": False, "error": "An error occurred while deleting the review. Please try again later."}), 500
+        return jsonify(
+            {"success": False, "error": "An error occurred while deleting the review. Please try again later."}), 500
 
 
 @app.route('/ai_recommendations')
@@ -425,7 +460,8 @@ def ai_recommendations():
             'prediction': rec.get('score', 0),
             'avg_rating': restaurant_dict.get(rec.get('gmap_id', ''), {}).get('Rating', 0),
             'num_reviews': restaurant_dict.get(rec.get('gmap_id', ''), {}).get('Reviews', 0),
-            'img_url': restaurant_dict.get(rec.get('gmap_id', ''), {}).get('img_url', 'https://example.com/default_image.jpg')
+            'img_url': restaurant_dict.get(rec.get('gmap_id', ''), {}).get('img_url',
+                                                                           'https://example.com/default_image.jpg')
         }
         for rec in recommendations
     ]
@@ -438,7 +474,7 @@ def restaurant_details(gmap_id):
     # Fetch restaurant details from MongoDB
     restaurant = restaurants_collection.find_one({'gmap_id': gmap_id})
     if restaurant:
-        # Construct response data
+        # Construct response DB
         data = {
             'name': restaurant['name'],
             'img_url': restaurant['img_url'],
@@ -460,7 +496,7 @@ def review_details(gmap_id):
     review = reviews_collection.find_one({'user_id': user_id, 'gmap_id': gmap_id})
 
     if restaurant:
-        # Construct response data
+        # Construct response DB
         data = {
             'name': restaurant.get('name', 'No Name Available'),
             'img_url': restaurant.get('img_url', 'No Image Available'),
@@ -475,42 +511,73 @@ def review_details(gmap_id):
         return jsonify({'error': 'Restaurant not found'}), 404
 
 
-# @app.route('/click_event', methods=['POST'])
-# @login_required
-# def click_event():
-#     try:
-#         user_id = current_user.id
-#         gmap_id = request.form.get('gmap_id')
-#         popup_type = request.form.get('popup_type')  # Added parameter to distinguish popup type
-#         timestamp = int(time.time() * 1000)  # Current timestamp in milliseconds
-#
-#         if not gmap_id:
-#             return jsonify({"success": False, "error": "Missing gmap_id"}), 400
-#
-#         if popup_type not in ['ai', 'restaurant']:
-#             return jsonify({"success": False, "error": "Invalid popup_type"}), 400
-#
-#         # Create event data
-#         event_data = {
-#             'user_id': user_id,
-#             'gmap_id': gmap_id,
-#             'popup_type': popup_type,  # Include popup type in the event data
-#             'timestamp': timestamp,
-#             'event': 'click'
-#         }
-#
-#         # Log event data
-#         logging.info(f"Sending event data: {event_data}")
-#
-#         # Send event data to Kafka
-#         producer.send('click_events', value=event_data)
-#         producer.flush()
-#
-#         return jsonify({"success": True}), 200
-#     except Exception as e:
-#         logging.error(f"Error producing click event: {e}")
-#         return jsonify({"success": False, "error": "An error occurred while producing the click event."}), 500
+@app.route('/enter', methods=['GET'])
+@login_required
+def user_entered():
+    user_id = current_user.id
+    # ip_address = request.remote_addr
+    entering_time = datetime.now(timezone.utc).isoformat()
+
+    event = {
+        'event_type': 'user_entered',
+        'user_id': user_id,
+        # 'ip': ip_address,
+        'entering_time': entering_time
+    }
+
+    # Send message to Kafka
+    producer.send(kafka_topic, key=str(user_id), value=event)
+    producer.flush()
+
+    return redirect(url_for('index'))
+
+
+@app.route('/click/<gmap_id>', methods=['POST'])
+@login_required
+def ai_recommendation_click(gmap_id):
+    user_id = current_user.id
+
+    event = {
+        'event_type': 'url_click',
+        'user_id': user_id,
+        'gmap_id': gmap_id
+    }
+
+    # Send message to Kafka
+    producer.send(kafka_topic, key=str(user_id), value=event)
+    producer.flush()
+
+    return redirect(url_for('ai_recommendations'))
+
+
+@app.route('/exit', methods=['POST'])
+@login_required
+def user_exited():
+    user_id = current_user.id
+    exiting_time = datetime.now(timezone.utc).isoformat()
+
+    event = {
+        'event_type': 'user_exited',
+        'user_id': user_id,
+        'exiting_time': exiting_time
+    }
+
+    # Send message to Kafka
+    producer.send(kafka_topic, key=str(user_id), value=event)
+    producer.flush()
+
+    return redirect(url_for('index'))
+
+
+@app.route('/events', methods=['POST'])
+def receive_event():
+    try:
+        event = request.json
+        analytics_collection.insert_one(event)
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080)
+    app.run(debug=True, host='0.0.0.0', port=5050)

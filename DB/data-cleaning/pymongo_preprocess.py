@@ -31,39 +31,39 @@ def filter_by_gmap_id(data, key):
     return filtered_data
 
 # Load and filter Restaurants
-print("Loading Restaurants data...")
+print("Loading Restaurants DB...")
 with open(restaurants_file_path, 'r') as f:
     restaurants = json.load(f)
 print(f"Loaded {len(restaurants)} restaurants.")
 
 # Print first 10 gmap_id values from restaurants for debugging
-print("Sample gmap_id values from Restaurants data:")
+print("Sample gmap_id values from Restaurants DB:")
 for i in range(min(10, len(restaurants))):
     print(restaurants[i]['gmap_id'])
 
-print("Filtering Restaurants data...")
+print("Filtering Restaurants DB...")
 filtered_restaurants = filter_by_gmap_id(restaurants, 'gmap_id')
-print(f"Filtered Restaurants data. {len(filtered_restaurants)} remaining.")
+print(f"Filtered Restaurants DB. {len(filtered_restaurants)} remaining.")
 
 # Load and filter Reviews
-print("Loading Reviews data...")
+print("Loading Reviews DB...")
 with open(reviews_file_path, 'r') as f:
     reviews = json.load(f)
 print(f"Loaded {len(reviews)} reviews.")
 
-print("Filtering Reviews data...")
+print("Filtering Reviews DB...")
 filtered_reviews = filter_by_gmap_id(reviews, 'gmap_id')
-print(f"Filtered Reviews data. {len(filtered_reviews)} remaining.")
+print(f"Filtered Reviews DB. {len(filtered_reviews)} remaining.")
 
-# Save the filtered data back to JSON files
-print("Saving filtered data...")
+# Save the filtered DB back to JSON files
+print("Saving filtered DB...")
 
 with open(restaurants_file_path, 'w') as f:
     json.dump(filtered_restaurants, f, indent=4)
-print(f"Updated Restaurants data saved to {restaurants_file_path}.")
+print(f"Updated Restaurants DB saved to {restaurants_file_path}.")
 
 with open(reviews_file_path, 'w') as f:
     json.dump(filtered_reviews, f, indent=4)
-print(f"Updated Reviews data saved to {reviews_file_path}.")
+print(f"Updated Reviews DB saved to {reviews_file_path}.")
 
 print("Filtering complete and files have been updated.")

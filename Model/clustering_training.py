@@ -5,10 +5,12 @@ from bson import ObjectId
 from pymongo import MongoClient
 from scipy.sparse import csr_matrix
 from dists import kmeans_clustering_plus_plus, calculate_silhouette_score, cos_sim_mag_dist
+import os
 
 def run_clustering(k=50):
     # MongoDB connection details
-    client = MongoClient('mongodb://localhost:27017/')
+    mongo_uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
+    client = MongoClient(mongo_uri)
     db = client['Google-Maps-Restaurant']
     reviews_collection = db["Reviews"]
     clusters_collection = db['Clusters']
@@ -30,7 +32,7 @@ def run_clustering(k=50):
     # Filter reviews to include only the selected top users
     filtered_reviews = reviews[reviews['user_id'].isin(top_users)]
 
-    # Pivot the data: user_id as rows, gmap_id as columns, rating as values
+    # Pivot the DB: user_id as rows, gmap_id as columns, rating as values
     users = filtered_reviews.pivot(index='user_id', columns='gmap_id', values='rating').fillna(0)
 
     print('users.shape before filtering:', users.shape)
@@ -38,7 +40,7 @@ def run_clustering(k=50):
     # Sort users by the number of nonzero columns (i.e., the number of restaurants reviewed)
     users = users.reindex(users.astype(bool).sum(axis=1).sort_values(ascending=False).index)
 
-    # Select the top 50,000 users (or change this to a different number if needed)
+    # Select the top 100,000 users (or change this to a different number if needed)
     users = users[:100000]
     print('users.shape after selecting top users:', users.shape)
 
@@ -63,7 +65,7 @@ def run_clustering(k=50):
     print('train.shape:', train.shape)
     print('test.shape:', test.shape)
 
-    # Convert the training data to a sparse matrix for memory efficiency
+    # Convert the training DB to a sparse matrix for memory efficiency
     train_sparse = csr_matrix(train.values)
 
     # Perform k-means clustering with custom distance and memory efficiency
@@ -84,7 +86,7 @@ def run_clustering(k=50):
 
     print("Clustering model and centroids saved.")
 
-    # Assign clusters to the training data
+    # Assign clusters to the training DB
     train.loc[:, 'cluster'] = [np.argmin([cos_sim_mag_dist(train.iloc[i].values, centroid) for centroid in centroids])
                                for i in range(len(train))]
 

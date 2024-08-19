@@ -4,6 +4,6 @@
 
 /__pycache__/*
 
-/data/data-cleaning/data/*
+/DB/data-cleaning/data/*
 
-/data/Google-Maps-Restaurant/dump/*
+/DB/dump/*
