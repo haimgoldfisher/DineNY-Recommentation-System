@@ -566,7 +566,7 @@ def user_exited():
     producer.send(kafka_topic, key=str(user_id), value=event)
     producer.flush()
 
-    return redirect(url_for('index'))
+    return redirect(url_for('login'))
 
 
 @app.route('/events', methods=['POST'])

@@ -5,6 +5,10 @@ LABEL authors="haimgoldfisher"
 # Set the working directory in the container
 WORKDIR /app
 
+# Install curl, ps and other dependencies
+RUN apt-get update && apt-get install -y curl  \
+    && apt-get install -y procps
+
 # Copy the requirements file and install Python dependencies
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt

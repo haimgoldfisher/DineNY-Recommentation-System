@@ -5,6 +5,9 @@ LABEL authors="haimgoldfisher"
 # Switch to root user to install dependencies
 USER root
 
+# Install curl and other dependencies
+RUN apt-get update && apt-get install -y curl
+
 # Install Python dependencies
 COPY requirements.txt requirements.txt
 RUN pip install --upgrade pip && \

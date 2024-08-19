@@ -11,13 +11,20 @@ services:
       - ALLOW_ANONYMOUS_LOGIN=yes
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
 
   kafka:
     image: wurstmeister/kafka:latest
     ports:
       - "9092:9092"
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
     environment:
       - KAFKA_BROKER_ID=1
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
@@ -28,26 +35,10 @@ services:
       - kafka-data:/bitnami/kafka/data
     healthcheck:
       test: ["CMD-SHELL", "nc -z kafka 9092"]
-      interval: 30s
-      retries: 3
+      interval: 10s
+      retries: 5
       start_period: 30s
-      timeout: 30s
-    networks:
-      - app-network
-
-  flask-app:
-    image: haimgoldfisher/app-back-front:latest
-    ports:
-      - "5050:5050"
-    depends_on:
-      - kafka
-      - mongo
-    environment:
-      - SECRET_KEY=your_secret_key
-      - MONGO_URI=mongodb://mongo:27017/
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_TOPIC=analytics_topic
-      - MONGO_DB=Google-Maps-Restaurant
+      timeout: 5s
     networks:
       - app-network
 
@@ -57,26 +48,67 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
     networks:
       - app-network
+
+  flask-app:
+    image: haimgoldfisher/app-back-front:latest
+    ports:
+      - "5050:5050"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    environment:
+      - SECRET_KEY=your_secret_key
+      - MONGO_URI=mongodb://mongo:27017/
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC=analytics_topic
+      - MONGO_DB=Google-Maps-Restaurant
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5050 || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+      timeout: 5s
 
   recommendation_model:
     image: haimgoldfisher/recommendation_model:latest
     ports:
       - "8080:8080"
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     environment:
       - MONGO_URI=mongodb://mongo:27017/
       - MONGO_DB=Google-Maps-Restaurant
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/next-training || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+      timeout: 5s
 
   kafka_consumer:
     image: haimgoldfisher/kafka_consumer:latest
     depends_on:
-      - kafka
-      - mongo
+      kafka:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      flask-app:
+        condition: service_healthy
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - KAFKA_TOPIC=analytics_topic
@@ -85,6 +117,12 @@ services:
       - MONGO_DB=Google-Maps-Restaurant
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep -v grep | grep kafka_consumer || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+      timeout: 5s
 
 volumes:
   kafka-data:
