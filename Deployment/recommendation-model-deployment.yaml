@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommendation-model
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recommendation-model
+  template:
+    metadata:
+      labels:
+        app: recommendation-model
+    spec:
+      containers:
+      - name: recommendation-model
+        image: haimgoldfisher/recommendation_model:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: MONGO_URI
+          value: mongodb://mongo:27017/
+        - name: MONGO_DB
+          value: Google-Maps-Restaurant
+        livenessProbe:
+          httpGet:
+            path: /next-training
+            port: 8080
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5

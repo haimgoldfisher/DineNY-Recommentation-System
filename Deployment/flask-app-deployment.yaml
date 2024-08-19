@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      containers:
+      - name: flask-app
+        image: haimgoldfisher/app-back-front:latest
+        ports:
+        - containerPort: 5050
+        env:
+        - name: SECRET_KEY
+          value: your_secret_key
+        - name: MONGO_URI
+          value: mongodb://mongo:27017/
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: kafka:9092
+        - name: KAFKA_TOPIC
+          value: analytics_topic
+        - name: MONGO_DB
+          value: Google-Maps-Restaurant
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5050
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
