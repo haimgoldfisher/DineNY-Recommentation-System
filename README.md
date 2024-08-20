@@ -173,6 +173,76 @@ For more details, see [Deployment README](Deployment/README.md).
 
 </details>
 
+## Technologies
+
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+
+  <a href="https://www.python.org/" target="_blank" title="Python">
+    <img src="https://www.svgrepo.com/show/376344/python.svg" alt="Python" width="80"/>
+  </a>
+
+  <a href="https://developer.mozilla.org/en-US/docs/Web/HTML" target="_blank" title="HTML">
+    <img src="https://cdn.iconscout.com/icon/premium/png-256-thumb/html-2752158-2284975.png?f=webp&w=256" alt="HTML" width="80"/>
+  </a>
+
+  <a href="https://developer.mozilla.org/en-US/docs/Web/CSS" target="_blank" title="CSS">
+    <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/css-icon.png" alt="CSS" width="80"/>
+  </a>
+
+  <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank" title="JavaScript">
+    <img src="https://cdn.worldvectorlogo.com/logos/javascript-1.svg" alt="JavaScript" width="80"/>
+  </a>
+
+  <a href="https://flask.palletsprojects.com/" target="_blank" title="Flask">
+    <img src="https://external-preview.redd.it/n9EWl-GXdiaYYVOhB3Dy1hT69l0v8KfPnDVeqDQ6ANE.jpg?width=640&crop=smart&auto=webp&s=2d2869322e0dc4ca537a9b71295e4e9f1b3e9a58" alt="Flask" width="80"/>
+  </a>
+
+  <a href="https://www.mongodb.com/" target="_blank" title="MongoDB">
+    <img src="https://www.svgrepo.com/show/331488/mongodb.svg" alt="MongoDB" width="80"/>
+  </a>
+
+  <a href="https://www.uvicorn.org/" target="_blank" title="Uvicorn">
+    <img src="https://www.uvicorn.org/uvicorn.png" alt="Uvicorn" width="80"/>
+  </a>
+
+  <a href="https://scikit-learn.org/" target="_blank" title="Scikit-Learn">
+    <img src="https://seeklogo.com/images/S/scikit-learn-logo-8766D07E2E-seeklogo.com.png" alt="scikit-learn" width="80"/>
+  </a>
+
+  <a href="https://pandas.pydata.org/" target="_blank" title="Pandas">
+    <img src="https://pandas.pydata.org/docs/_static/pandas.svg" alt="Pandas" width="80"/>
+  </a>
+
+  <a href="https://numpy.org/" target="_blank" title="NumPy">
+    <img src="https://numpy.org/images/logo.svg" alt="NumPy" width="80"/>
+  </a>
+
+  <a href="https://scipy.org/" target="_blank" title="SciPy">
+    <img src="https://miro.medium.com/v2/resize:fit:300/1*QfoEbdmoC1fJcRSnaQmtRg.png" alt="SciPy" width="80"/>
+  </a>
+
+  <a href="https://spark.apache.org/" target="_blank" title="PySpark">
+    <img src="https://spark.apache.org/images/spark-logo-trademark.png" alt="PySpark" width="80"/>
+  </a>
+
+  <a href="https://kafka.apache.org/" target="_blank" title="Kafka">
+    <img src="https://cdn.prod.website-files.com/62038ffc9cd2db4558e3c7b7/623b44a1913c46041e39c836_kafka.svg" alt="Kafka" width="80"/>
+  </a>
+
+  <a href="https://www.docker.com/" target="_blank" title="Docker">
+    <img src="https://www.svgrepo.com/show/331370/docker.svg" alt="Docker" width="80"/>
+  </a>
+
+  <a href="https://kubernetes.io/" target="_blank" title="Kubernetes">
+    <img src="https://logos-world.net/wp-content/uploads/2023/06/Kubernetes-Symbol.png" alt="Kubernetes" width="80"/>
+  </a>
+
+  <a href="https://minikube.sigs.k8s.io/" target="_blank" title="Minikube">
+    <img src="https://cdn.prod.website-files.com/64196dbe03e13c204de1b1c8/64773f546a9ff7246f6a73f0_80-image-2.png" alt="Minikube" width="80"/>
+  </a>
+
+</div>
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
