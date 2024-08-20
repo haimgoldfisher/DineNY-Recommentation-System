@@ -95,14 +95,14 @@ For more details, see [Deployment README](Deployment/README.md).
 <details>
 <summary>App</summary>
 
-  - `Dockerfile`: Dockerfile for the Flask application.
-  - `__pycache__`: Compiled Python files.
-  - `clustering_utils.py`: Utilities for clustering operations.
-  - `requirements.txt`: Python dependencies for the Flask application.
-  - `templates`: HTML templates for the Flask application.
   - `app.py`: Main Flask application script.
-  - `get_cluster.py`: Script for generating clusters.
+  - `get_cluster.py`: Script for return user's cluster.
+  - `clustering_utils.py`: Utilities for clustering operations.
   - `static`: Static files such as CSS and JavaScript.
+  - `templates`: HTML templates for the Flask application.
+  - `README.md`: Documentation for the application.
+  - `requirements.txt`: Python dependencies for the Flask application.
+  - `Dockerfile`: Dockerfile for the Flask application.
 
 For more details, see [App README](App/README.md).
 
@@ -111,12 +111,12 @@ For more details, see [App README](App/README.md).
 <details>
 <summary>DB</summary>
 
-  - `Dockerfile`: Dockerfile for the database setup.
-  - `README.md`: Documentation for the database.
   - `data-cleaning`: Scripts for data cleaning.
   - `dump`: Database dump files.
   - `get_img.py`: Script for retrieving images.
-  - `restore.sh`: Script for restoring the database.
+  - `restore.sh`: Script for restoring the database in MongoDB container.
+  - `README.md`: Documentation for the database.
+  - `Dockerfile`: Dockerfile for the database setup.
 
 For more details, see [DB README](DB/README.md).
 
@@ -125,16 +125,15 @@ For more details, see [DB README](DB/README.md).
 <details>
 <summary>Model</summary>
 
-  - `Dockerfile`: Dockerfile for the model training environment.
-  - `__pycache__`: Compiled Python files.
-  - `clus_counter.py`: Script for counting clusters.
-  - `clustering_training.py`: Script for training the clustering model.
-  - `model.py`: Script for the ALS model.
-  - `README.md`: Documentation for the model training.
+  - `model.py`: Script for the FAST API - training scheduler.
   - `als_training.py`: Script for training the ALS model.
-  - `clus_test.py`: Script for testing clustering.
+  - `clustering_training.py`: Script for training the clustering model.
   - `dists.py`: Script for distance functions used in clustering.
+  - `clus_test.py`: Script for testing clustering.
+  - `clus_counter.py`: Script for counting clusters.
+  - `README.md`: Documentation for the model training.
   - `requirements.txt`: Python dependencies for model training.
+  - `Dockerfile`: Dockerfile for the model training environment.
 
 For more details, see [Model README](Model/README.md).
 
@@ -143,10 +142,10 @@ For more details, see [Model README](Model/README.md).
 <details>
 <summary>Data-Streaming</summary>
 
-  - `Dockerfile`: Dockerfile for the data streaming service.
-  - `README.md`: Documentation for the data streaming service.
   - `kafka_consumer.py`: Kafka consumer script.
+  - `README.md`: Documentation for the data streaming service.
   - `requirements.txt`: Python dependencies for the data streaming service.
+  - `Dockerfile`: Dockerfile for the data streaming service.
 
 For more details, see [Data-Streaming README](Data-Streaming/README.md).
 
@@ -155,7 +154,6 @@ For more details, see [Data-Streaming README](Data-Streaming/README.md).
 <details>
 <summary>Deployment</summary>
 
-  - `README.md`: Documentation for deployment.
   - `deploy.sh`: Deployment script.
   - `kafka-consumer-deployment.yaml`: Kubernetes deployment configuration for Kafka consumer.
   - `mongo-service.yaml`: Kubernetes service configuration for MongoDB.
@@ -168,6 +166,7 @@ For more details, see [Data-Streaming README](Data-Streaming/README.md).
   - `mongo-deployment.yaml`: Kubernetes deployment configuration for MongoDB.
   - `zookeeper-deployment.yaml`: Kubernetes deployment configuration for Zookeeper.
   - `zookeeper-service.yaml`: Kubernetes service configuration for Zookeeper.
+  - `README.md`: Documentation for deployment.
 
 For more details, see [Deployment README](Deployment/README.md).
 
