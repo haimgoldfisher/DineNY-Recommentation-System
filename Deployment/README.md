@@ -124,3 +124,4 @@ To delete all resources created for this project, run:
 - Ensure all YAML files are correctly configured before applying them.
 - Adjust timeout values as needed based on your cluster performance and service startup times.
 - Monitor the status of your deployments using `kubectl get deployments` and `kubectl get pods` to ensure everything is running as expected.
+min
