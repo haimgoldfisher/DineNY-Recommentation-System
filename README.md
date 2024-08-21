@@ -60,6 +60,34 @@ By Haim Goldfisher
 
 ## Project Overview
 
+### Dataset
+
+#### Overview
+
+The dataset for this project includes information about restaurants, user reviews, and user data. It consists of the following primary components:
+
+1. **Restaurants Data:** Details about restaurants, including names, locations, and other metadata.
+2. **User Data:** Information about users, including their preferences.
+3. **Reviews Data:** User-generated reviews with ratings, comments, and timestamps.
+
+#### Sources
+
+- **Google Local Dataset (2021):** This dataset provides detailed information about Google Maps places. You can access the dataset [Here](https://datarepo.eng.ucsd.edu/mcauley_group/gdrive/googlelocal/).
+- **User Contributions:** Data from user interactions within the application is continuously added to refine recommendations and improve accuracy.
+
+#### Data Processing
+
+1. **Data Cleaning:** Raw data is cleaned and normalized to ensure consistency and accuracy.
+2. **Data Transformation:** The data is transformed into a suitable format for analysis and model training.
+3. **Integration:** Data is integrated into the MongoDB database, structured into collections for efficient querying and retrieval.
+
+#### Data Schema
+
+- **Restaurants Collection:** Includes fields such as `name`, `address`, `gmap_url`, and more.
+- **Users Collection:** Includes fields such as `user_id`, and `reviews` array.
+- **Reviews Collection:** Includes fields such as `user_id`, `gmap_id`, `rating`, and `timestamp`.
+
+
 ### App Microservice
 
 The App microservice is responsible for the main Flask application that provides the user interface and handles interactions with the recommendation system.
@@ -104,8 +132,6 @@ For more details, see [Deployment README](Deployment/README.md).
   - `requirements.txt`: Python dependencies for the Flask application.
   - `Dockerfile`: Dockerfile for the Flask application.
 
-For more details, see [App README](App/README.md).
-
 </details>
 
 <details>
@@ -117,8 +143,6 @@ For more details, see [App README](App/README.md).
   - `restore.sh`: Script for restoring the database in MongoDB container.
   - `README.md`: Documentation for the database.
   - `Dockerfile`: Dockerfile for the database setup.
-
-For more details, see [DB README](DB/README.md).
 
 </details>
 
@@ -135,8 +159,6 @@ For more details, see [DB README](DB/README.md).
   - `requirements.txt`: Python dependencies for model training.
   - `Dockerfile`: Dockerfile for the model training environment.
 
-For more details, see [Model README](Model/README.md).
-
 </details>
 
 <details>
@@ -146,8 +168,6 @@ For more details, see [Model README](Model/README.md).
   - `README.md`: Documentation for the data streaming service.
   - `requirements.txt`: Python dependencies for the data streaming service.
   - `Dockerfile`: Dockerfile for the data streaming service.
-
-For more details, see [Data-Streaming README](Data-Streaming/README.md).
 
 </details>
 
@@ -167,8 +187,6 @@ For more details, see [Data-Streaming README](Data-Streaming/README.md).
   - `zookeeper-deployment.yaml`: Kubernetes deployment configuration for Zookeeper.
   - `zookeeper-service.yaml`: Kubernetes service configuration for Zookeeper.
   - `README.md`: Documentation for deployment.
-
-For more details, see [Deployment README](Deployment/README.md).
 
 </details>
 

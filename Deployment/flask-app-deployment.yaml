@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: flask-app
-        image: haimgoldfisher/app-back-front:latest
+        image: haimgoldfisher/flask-app:latest
         ports:
         - containerPort: 5050
         env:

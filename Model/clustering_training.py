@@ -126,10 +126,39 @@ def run_clustering(k=50):
 
     print("Recommendations saved to MongoDB.")
 
-    # # Calculate silhouette score for the clustering
-    # silhouette_avg = calculate_silhouette_score(train_sparse.toarray(), clusters, cos_sim_mag_dist)
-    # print(f"Silhouette Score for the clustering: {silhouette_avg}")
+    # Calculate RMSE
+    def predict_ratings(user_vector, centroids, cluster_recommendations):
+        """Predict ratings based on user vector and cluster recommendations."""
+        user_cluster = np.argmin([cos_sim_mag_dist(user_vector, centroid) for centroid in centroids])
+        recommendations = next(
+            (rec['recommendations'] for rec in cluster_recommendations if rec['cluster_id'] == user_cluster), [])
+        rec_dict = {rec['gmap_id']: rec['score'] for rec in recommendations}
+        return rec_dict
 
+    def calculate_rmse(test_df, cluster_recommendations):
+        """Calculate RMSE for predictions vs actual ratings."""
+        total_squared_error = 0
+        count = 0
+
+        for user_id, user_ratings in test_df.iterrows():
+            user_vector = user_ratings.values
+            predictions = predict_ratings(user_vector, centroids, cluster_recommendations)
+            actual_ratings = user_ratings[user_ratings > 0]
+
+            for gmap_id, actual_rating in actual_ratings.items():
+                if gmap_id in predictions:
+                    predicted_rating = predictions[gmap_id]
+                    squared_error = (actual_rating - predicted_rating) ** 2
+                    total_squared_error += squared_error
+                    count += 1
+
+        if count == 0:
+            return float('nan')
+        return np.sqrt(total_squared_error / count)
+
+    print("Calculating RMSE for the test set...")
+    rmse = calculate_rmse(test, cluster_recommendations)
+    print(f"Clustering Algorithm RMSE: {rmse}")
 
 
 if __name__ == "__main__":

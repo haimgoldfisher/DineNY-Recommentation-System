@@ -38,5 +38,6 @@ The MongoDB instance will automatically initialize with the provided data once t
 
 - Ensure that any necessary configurations or scripts are correctly placed in the Docker image to match your specific requirements.
 - The `restore.sh` script should handle the restoration of the database from the dump files, so verify that this script is correctly set up and tested.
+- For more information about the dataset, see the main README.md file under Dataset section.
 
 For any further customization or issues, please refer to the MongoDB documentation or consult the project repository's resources.

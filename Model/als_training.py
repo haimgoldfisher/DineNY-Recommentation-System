@@ -3,6 +3,7 @@ from pyspark.ml.recommendation import ALS
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml.feature import StringIndexer
 from pyspark.sql.functions import col, explode, collect_list, struct
+# from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
 from clustering_training import run_clustering
 import os
 
@@ -40,11 +41,11 @@ print("Indexing user and restaurant columns...")
 user_indexer = StringIndexer(inputCol="user_id", outputCol="user_index").fit(df_reviews)
 rest_indexer = StringIndexer(inputCol="gmap_id", outputCol="rest_id").fit(df_reviews)
 
-user_indexer.write().overwrite().save('user_indexer')
-rest_indexer.write().overwrite().save('rest_indexer')
+# user_indexer.write().overwrite().save('user_indexer')
+# rest_indexer.write().overwrite().save('rest_indexer')
 
-# df_reviews = user_indexer.transform(df_reviews)
-# df_reviews = rest_indexer.transform(df_reviews)
+df_reviews = user_indexer.transform(df_reviews)
+df_reviews = rest_indexer.transform(df_reviews)
 
 # Select relevant columns and split into training and test sets
 df_final = df_reviews.select("user_index", "rest_id", "rating").filter(df_reviews.rating.isNotNull())
@@ -58,6 +59,36 @@ train.show()
 # Train the ALS model
 print("Training the ALS model...")
 als = ALS(maxIter=10, regParam=0.1, userCol="user_index", itemCol="rest_id", ratingCol="rating", coldStartStrategy="drop")
+
+# # Create parameter grid for hyperparameter tuning
+# param_grid = (ParamGridBuilder()
+#                .addGrid(als.maxIter, [5, 10, 15])
+#                .addGrid(als.regParam, [0.01, 0.1, 1.0])
+#                .addGrid(als.rank, [10, 50, 100])
+#                .build())
+#
+# # Create evaluator
+# evaluator = RegressionEvaluator(metricName="rmse", labelCol="rating", predictionCol="prediction")
+#
+# # Create cross-validator
+# crossval = CrossValidator(estimator=als,
+#                           estimatorParamMaps=param_grid,
+#                           evaluator=evaluator,
+#                           numFolds=3)  # Number of folds for cross-validation
+#
+# # Train the model with cross-validation
+# print("Training the ALS model with cross-validation...")
+# cv_model = crossval.fit(train)
+#
+# # Get the best model
+# best_model = cv_model.bestModel
+#
+# print(f"Best model parameters: MaxIter = {best_model._java_obj.getMaxIter()}, "
+#       f"RegParam = {best_model._java_obj.getRegParam()}, "
+#       f"Rank = {best_model._java_obj.getRank()}")
+#
+# print("Training complete. Testing the model on the test set...")
+
 model = als.fit(train)
 
 print("Training complete. Testing the model on the test set...")

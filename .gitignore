@@ -4,6 +4,12 @@
 
 /__pycache__/*
 
+*/__pycache__/*
+
 /DB/data-cleaning/data/*
 
 /DB/dump/*
+
+*/.DS_Store
+
+.DS_Store

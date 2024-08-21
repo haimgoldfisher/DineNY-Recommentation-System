@@ -244,6 +244,7 @@ def update_ai_recommendations(user_id):
     # Fetch user reviews
     user_reviews = users_collection.find_one({"user_id": user_id}, {"ratings": 1})
 
+
     if not user_reviews or not user_reviews.get('ratings'):
         # No reviews for the user, delete existing recommendations and return empty list
         recommendations_collection.delete_one({"user_id": user_id})
@@ -553,6 +554,7 @@ def ai_recommendation_click(gmap_id):
 @app.route('/exit', methods=['POST'])
 @login_required
 def user_exited():
+    print("user_exited route hit")
     user_id = current_user.id
     exiting_time = datetime.now(timezone.utc).isoformat()
 

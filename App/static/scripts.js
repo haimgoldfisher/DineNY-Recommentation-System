@@ -179,9 +179,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const rating = document.querySelector('#rating').value;
             if (rating > 0) {
                 alert('Rating confirmed: ' + rating);
-                // Here you would normally submit the rating to the server
-                // For example:
-                // fetch('/api/submit_rating', { method: 'POST', body: new URLSearchParams({ rating }) });
                 document.getElementById('popup').classList.remove('show');
                 document.body.style.overflow = '';
             }
